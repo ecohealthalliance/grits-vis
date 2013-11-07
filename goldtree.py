@@ -66,17 +66,23 @@ def information_sort(m, diseases):
     return sorted(zip(m.symptoms, map(score, dis)), key=lambda x: x[1], reverse=True)
 
 def decision_tree(m):
+    class Node:
+        def __init__(self, value, left, right):
+            self.value = value
+            self.left = left
+            self.right = right
+
     def go(m, diseases):
         if not diseases:
-            return (None, None)
+            return (None, None, None)
 
         info = information_sort(m, diseases)
         bd = info[0]
         if bd[1] > 0.0:
             with_symptom, without_symptom = separate(diseases, lambda d: m(disease=d, symptom=bd[0]))
-            return (bd, [go(m, with_symptom), go(m, without_symptom)])
+            return Node(bd, go(m, with_symptom), go(m, without_symptom))
         else:
-            return (map(lambda x: x[0], info), [])
+            return Node(map(lambda x: x[0], info), None, None)
 
     return go(m, m.diseases)
 
