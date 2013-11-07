@@ -42,18 +42,47 @@ class SymptomMatrix(object):
 def transpose(mat):
     return [list(row) for row in zip(*mat)]
 
+def separate(seq, cond):
+    yes = []
+    no = []
+
+    for i in seq:
+        if cond(i):
+            yes.append(i)
+        else:
+            no.append(i)
+
+    return (yes, no)
+
 def information_sort(m, diseases):
     def score(row):
         trues = len(filter(None, row))
         falses = len(row) - trues
         return 1.0 - float(abs(trues - falses)) / len(row)
 
-    dis = transpose([m(disease=d) for d in diseases])
-    print dis[0]
-    print score(dis[0])
+    dis = [m(disease=d) for d in diseases]
+    dis = transpose(dis)
+
     return sorted(zip(m.symptoms, map(score, dis)), key=lambda x: x[1], reverse=True)
+
+def decision_tree(m):
+    def go(m, diseases):
+        if not diseases:
+            return (None, None)
+
+        info = information_sort(m, diseases)
+        bd = info[0]
+        if bd[1] > 0.0:
+            with_symptom, without_symptom = separate(diseases, lambda d: m(disease=d, symptom=bd[0]))
+            return (bd, [go(m, with_symptom), go(m, without_symptom)])
+        else:
+            return (map(lambda x: x[0], info), [])
+
+    return go(m, m.diseases)
+
+def describe_tree(t):
+    pass
 
 if __name__ == "__main__":
     m = SymptomMatrix("Matrix_symp_dis_v4_KIT.csv")
-
-    print information_sort(m, m.diseases)
+    d = decision_tree(m)
