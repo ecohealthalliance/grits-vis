@@ -1,6 +1,7 @@
 import copy
 import csv
 import json
+import sys
 
 class SymptomMatrix(object):
     def __init__(self, filename):
@@ -113,5 +114,7 @@ if __name__ == "__main__":
     o = tangelo_dendrogram_dict(d)
     j = json.dumps(o)
 
-    with open("decision_tree.json", "w") as f:
-        f.write(j)
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        with open(filename, "w") as f:
+            f.write(j)
