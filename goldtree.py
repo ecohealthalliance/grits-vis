@@ -1,7 +1,7 @@
 import copy
 import csv
 
-class Symptoms(object):
+class SymptomMatrix(object):
     def __init__(self, filename):
         with open(filename) as f:
             reader = csv.reader(f, delimiter="\t")
@@ -39,9 +39,21 @@ class Symptoms(object):
         else:
             return self.matrix[self.symptom_map[symptom]][self.disease_map[disease]]
 
-if __name__ == "__main__":
-    s = Symptoms("Matrix_symp_dis_v4_KIT.csv")
+def transpose(mat):
+    return [list(row) for row in zip(*mat)]
 
-    print s(symptom="Otitis")
-    print s(disease="AIDS")
-    print s(disease="AIDS", symptom="Diarrhea")
+def information_sort(m, diseases):
+    def score(row):
+        trues = len(filter(None, row))
+        falses = len(row) - trues
+        return 1.0 - float(abs(trues - falses)) / len(row)
+
+    dis = transpose([m(disease=d) for d in diseases])
+    print dis[0]
+    print score(dis[0])
+    return sorted(zip(m.symptoms, map(score, dis)), key=lambda x: x[1], reverse=True)
+
+if __name__ == "__main__":
+    m = SymptomMatrix("Matrix_symp_dis_v4_KIT.csv")
+
+    print information_sort(m, m.diseases)
