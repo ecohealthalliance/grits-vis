@@ -1,5 +1,6 @@
 import copy
 import csv
+import json
 
 class SymptomMatrix(object):
     def __init__(self, filename):
@@ -86,9 +87,31 @@ def decision_tree(m):
 
     return go(m, m.diseases)
 
-def describe_tree(t):
-    pass
+def tangelo_dendrogram_dict(t):
+    class Id:
+        def __init__(self):
+            self.counter = 0
+
+        def next(self):
+            count = self.counter
+            self.counter += 1
+            return count
+
+    def make_dict(tt, ident):
+        if tt is None:
+            return {}
+        else:
+            return { "id": ident.next(),
+                     "value": tt.value,
+                     "children": [make_dict(tt.left, ident), make_dict(tt.right, ident)] }
+
+    return make_dict(t, Id())
 
 if __name__ == "__main__":
     m = SymptomMatrix("Matrix_symp_dis_v4_KIT.csv")
     d = decision_tree(m)
+    o = tangelo_dendrogram_dict(d)
+    j = json.dumps(o)
+
+    with open("decision_tree.json", "w") as f:
+        f.write(j)
