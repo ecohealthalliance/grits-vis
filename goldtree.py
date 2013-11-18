@@ -69,8 +69,8 @@ def information_sort(m, diseases):
 
 def decision_tree(m):
     class Node:
-        def __init__(self, value, left, right):
-            self.value = value
+        def __init__(self, symptom, left, right):
+            self.symptom = symptom
             self.left = left
             self.right = right
 
@@ -82,9 +82,9 @@ def decision_tree(m):
         bd = info[0]
         if bd[1] > 0.0:
             with_symptom, without_symptom = separate(diseases, lambda d: m(disease=d, symptom=bd[0]))
-            return Node(bd, go(m, with_symptom), go(m, without_symptom))
+            return Node({"name": bd[0], "discrimination": bd[1]}, go(m, with_symptom), go(m, without_symptom))
         else:
-            return Node(map(lambda x: x[0], info), None, None)
+            return Node({"name": str(map(lambda x: x[0], info)), "discrimination": None}, None, None)
 
     return go(m, m.diseases)
 
@@ -103,8 +103,8 @@ def tangelo_dendrogram_dict(t):
             return {}
         else:
             return { "id": ident.next(),
-                     "value": tt.value,
-                     "children": [make_dict(tt.left, ident), make_dict(tt.right, ident)] }
+                     "symptom": tt.symptom,
+                     "children": filter(None, [make_dict(tt.left, ident), make_dict(tt.right, ident)]) }
 
     return make_dict(t, Id())
 

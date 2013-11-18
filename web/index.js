@@ -10,6 +10,7 @@ $(function () {
         $("#tree").dendrogram({
             data: data,
             id: {field: "id"},
+            label: {field: "symptom.name"},
         });
     });
 });
