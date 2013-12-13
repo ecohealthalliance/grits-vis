@@ -7,10 +7,9 @@ $(function () {
 
         console.log(data);
 
-        tangelo.vis.dendrogram({
+        $("#tree").dendrogram({
             data: data,
             id: {field: "id"},
-            el: d3.select("#tree").node()
         });
     });
 });
