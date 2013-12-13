@@ -11,6 +11,8 @@ $(function () {
             data: data,
             id: {field: "id"},
             label: {field: "symptom.name"},
+            nodesize: 15,
+            textsize: 14
         });
     });
 });
