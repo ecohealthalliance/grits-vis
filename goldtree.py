@@ -85,7 +85,8 @@ def decision_tree(m):
             return Node({"name": bd[0], "discrimination": bd[1]}, go(m, with_symptom), go(m, without_symptom))
         else:
             #return Node({"name": str(map(lambda x: x[0], info)), "discrimination": None}, None, None)
-            return Node({"name": "%d: %s" % (len(diseases), str(diseases)), "discrimination": None}, None, None)
+            #return Node({"name": "%d: %s" % (len(diseases), str(diseases)), "discrimination": None}, None, None)
+            return Node({"name": diseases, "discrimination": None}, None, None)
 
     return go(m, m.diseases)
 
