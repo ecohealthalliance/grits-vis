@@ -38,7 +38,7 @@ $(function () {
                     $(this).popover({
                         animation: true,
                         html: true,
-                        placement: "auto right",
+                        placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
                         trigger: "click",
                         content: html,
                         container: "body"
