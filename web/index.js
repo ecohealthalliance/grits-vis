@@ -15,26 +15,36 @@ $(function () {
 
         $("#tree").dendrogram({
             data: data,
-            //orientation: "vertical",
+            orientation: "vertical",
             id: {field: "id"},
-            //label: {field: "symptom.name"},
-            //nodesize: 15,
             textsize: 14,
+            nodesize: 5,
             initialize: function (enter, update, exit) {
-                enter.append("title")
-                    .text(function (d) {
-                        var left,
-                            right;
+                enter.each(function (d) {
+                    var left,
+                        right,
+                        html;
 
-                        if (!tangelo.isArray(d.symptom.name)) {
-                            left = d.children && d.children[0] ? getChildren(d.children[0]) : [];
-                            right = d.children && d.children[1] ? getChildren(d.children[1]) : [];
+                    if (!tangelo.isArray(d.symptom.name)) {
+                        left = d.children && d.children[0] ? getChildren(d.children[0]) : [];
+                        right = d.children && d.children[1] ? getChildren(d.children[1]) : [];
 
-                            return d.symptom.name + "; children without: " + left + "; children with: " + right;
-                        } else {
-                            return "diseases: " + d.symptom.name;
-                        }
+                        html = "<p><b>Symptom: </b>" + d.symptom.name + "</p>";
+                        html += "<p><b>Present: </b>" + left.join(", ") + "</p>";
+                        html += "<p><b>Absent: </b>" + right.join(", ") + "</p>";
+                    } else {
+                        html = "<p><b>diseases: </b>" + d.symptom.name.join(", ") + "</p>";
+                    }
+
+                    $(this).popover({
+                        animation: true,
+                        html: true,
+                        placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
+                        trigger: "click",
+                        content: html,
+                        container: "body"
                     });
+                });
             }
         });
     });
