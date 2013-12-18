@@ -18,6 +18,7 @@ $(function () {
             orientation: "vertical",
             id: {field: "id"},
             textsize: 14,
+            nodesize: 5,
             initialize: function (enter, update, exit) {
                 enter.each(function (d) {
                     var left,
