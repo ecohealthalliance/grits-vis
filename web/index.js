@@ -30,10 +30,11 @@ $(function () {
                         right = d.children && d.children[1] ? getChildren(d.children[1]) : [];
 
                         html = "<p><b>Symptom: </b>" + d.symptom.name + "</p>";
+                        html += "<p><b>Disease count: </b>" + (left.length + right.length) + "</p>";
                         html += "<p><b>Present: </b>" + left.join(", ") + "</p>";
                         html += "<p><b>Absent: </b>" + right.join(", ") + "</p>";
                     } else {
-                        html = "<p><b>diseases: </b>" + d.symptom.name.join(", ") + "</p>";
+                        html = "<p><b>Diseases: </b>" + d.symptom.name.join(", ") + "</p>";
                     }
 
                     $(this).popover({
