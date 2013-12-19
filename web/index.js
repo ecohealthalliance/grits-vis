@@ -57,5 +57,11 @@ $(function () {
                     });
             }
         });
+
+        $("#tree").dendrogram("on", "click.collapse", function (d, i, elt) {
+            if (d3.event.ctrlKey) {
+                this.action("collapse").call(elt, d, i);
+            }
+        });
     });
 });
