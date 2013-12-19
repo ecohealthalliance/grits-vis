@@ -42,10 +42,19 @@ $(function () {
                     animation: true,
                     html: true,
                     placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
-                    trigger: "click",
+                    trigger: "manual",
                     content: html,
                     container: "body"
                 });
+
+                d3.select(this)
+                    .on("click.popover", function (d) {
+                        if (d3.event.ctrlKey) {
+                            $(this).popover("hide");
+                        } else {
+                            $(this).popover("toggle");
+                        }
+                    });
             }
         });
     });
