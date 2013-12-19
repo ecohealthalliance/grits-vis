@@ -19,32 +19,32 @@ $(function () {
             id: {field: "id"},
             textsize: 14,
             nodesize: 5,
-            initialize: function (enter, update, exit) {
-                enter.each(function (d) {
-                    var left,
-                        right,
-                        html;
+            hoverNodeColor: {value: "firebrick"},
+            collapsedNodeColor: {value: "blue"},
+            newNodes: function (d) {
+                var left,
+                    right,
+                    html;
 
-                    if (!tangelo.isArray(d.symptom.name)) {
-                        left = d.children && d.children[0] ? getChildren(d.children[0]) : [];
-                        right = d.children && d.children[1] ? getChildren(d.children[1]) : [];
+                if (!tangelo.isArray(d.symptom.name)) {
+                    left = d.children && d.children[0] ? getChildren(d.children[0]) : [];
+                    right = d.children && d.children[1] ? getChildren(d.children[1]) : [];
 
-                        html = "<p><b>Symptom: </b>" + d.symptom.name + "</p>";
-                        html += "<p><b>Disease count: </b>" + (left.length + right.length) + "</p>";
-                        html += "<p><b>Present: </b>" + left.join(", ") + "</p>";
-                        html += "<p><b>Absent: </b>" + right.join(", ") + "</p>";
-                    } else {
-                        html = "<p><b>Diseases: </b>" + d.symptom.name.join(", ") + "</p>";
-                    }
+                    html = "<p><b>Symptom: </b>" + d.symptom.name + "</p>";
+                    html += "<p><b>Disease count: </b>" + (left.length + right.length) + "</p>";
+                    html += "<p><b>Present: </b>" + left.join(", ") + "</p>";
+                    html += "<p><b>Absent: </b>" + right.join(", ") + "</p>";
+                } else {
+                    html = "<p><b>Diseases: </b>" + d.symptom.name.join(", ") + "</p>";
+                }
 
-                    $(this).popover({
-                        animation: true,
-                        html: true,
-                        placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
-                        trigger: "click",
-                        content: html,
-                        container: "body"
-                    });
+                $(this).popover({
+                    animation: true,
+                    html: true,
+                    placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
+                    trigger: "click",
+                    content: html,
+                    container: "body"
                 });
             }
         });
