@@ -30,7 +30,7 @@ $(function () {
             } else {
                 node.color = "pink";
 
-                way = symptoms.hasOwnProperty(node.symptom.name) ? 0 : 1;
+                way = symptoms.hasOwnProperty(node.symptom.name.toLowerCase()) ? 0 : 1;
                 followPath(node.children[way], symptoms);
             }
         }
@@ -38,7 +38,9 @@ $(function () {
         qargs = tangelo.queryArguments();
         if (qargs.hasOwnProperty("symptoms")) {
             symptoms = {};
-            $.each(qargs.symptoms.split(","), function (_, v) {
+            $.each(qargs.symptoms.split(",").map(function (s) {
+                return s.toLowerCase();
+            }), function (_, v) {
                 symptoms[v] = true;
             });
 
