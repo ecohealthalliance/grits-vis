@@ -21,7 +21,7 @@ $(function () {
             nodesize: 5,
             hoverNodeColor: {value: "firebrick"},
             collapsedNodeColor: {value: "blue"},
-            newNodes: function (d) {
+            onNodeCreate: function (d) {
                 var left,
                     right,
                     html;
@@ -55,6 +55,9 @@ $(function () {
                             $(this).popover("toggle");
                         }
                     });
+            },
+            onNodeDestroy: function (d) {
+                $(this).popover("destroy");
             }
         });
 
