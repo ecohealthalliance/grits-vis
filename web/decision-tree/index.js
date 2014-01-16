@@ -6,9 +6,43 @@ function getChildren(node){
 
 $(function () {
     d3.json("decision_tree.json", function (err, data) {
+        var symptoms,
+            qargs;
+
         if (err) {
             console.log(err);
             return;
+        }
+
+        function defaultColor(node) {
+            node.color = "lightsteelblue";
+            $.each(node.children, function (i, v) {
+                defaultColor(v);
+            });
+        }
+        defaultColor(data);
+
+        function followPath(node, symptoms){
+            var way;
+
+            if (!node.children || node.children.length === 0) {
+                node.color = "red";
+            } else {
+                node.color = "pink";
+
+                way = symptoms.hasOwnProperty(node.symptom.name) ? 0 : 1;
+                followPath(node.children[way], symptoms);
+            }
+        }
+
+        qargs = tangelo.queryArguments();
+        if (qargs.hasOwnProperty("symptoms")) {
+            symptoms = {};
+            $.each(qargs.symptoms.split(","), function (_, v) {
+                symptoms[v] = true;
+            });
+
+            followPath(data, symptoms);
         }
 
         d = data;
@@ -19,6 +53,7 @@ $(function () {
             id: {field: "id"},
             textsize: 14,
             nodesize: 5,
+            nodeColor: {field: "color"},
             hoverNodeColor: {value: "firebrick"},
             collapsedNodeColor: {value: "blue"},
             onNodeCreate: function (d) {
