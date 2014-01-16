@@ -49,7 +49,7 @@ $(function () {
 
                 d3.select(this)
                     .on("click.popover", function (d) {
-                        if (d3.event.ctrlKey) {
+                        if (d3.event.shiftKey) {
                             $(this).popover("hide");
                         } else {
                             $(this).popover("toggle");
@@ -62,7 +62,7 @@ $(function () {
         });
 
         $("#tree").dendrogram("on", "click.collapse", function (d, i, elt) {
-            if (d3.event.ctrlKey) {
+            if (d3.event.shiftKey) {
                 this.action("collapse").call(elt, d, i);
             }
         });
