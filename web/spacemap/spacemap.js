@@ -1,6 +1,6 @@
 /*jslint browser: true, nomen: true */
 
-(function (tangelo, $, d3) {
+(function (tangelo, $, d3, google) {
     "use strict";
 
     if (!($ && $.widget && d3)) {
@@ -11,7 +11,7 @@
         return;
     }
 
-    $.widget("tangelo.spacemap", {
+    tangelo.widget("tangelo.spacemap", {
         options: {
             data: [],
             constraints: [],
@@ -20,12 +20,44 @@
         },
 
         _create: function () {
-            var options;
+            var options,
+                mapConfig,
+                mapOptions,
+                that = this;
 
             this.force = d3.layout.force();
 
-            this.svg = d3.select(this.element.get(0))
-                .append("svg");
+            mapConfig = {
+                initialize: function (svg) {
+                    that.svg = d3.select(svg);
+                    that._update();
+                },
+
+                draw: function (d) {
+                    this.shift(that.svg.node(), -d.translation.x, -d.translation.y);
+                    that.nodes.forEach(function(node) {
+                        var loc, googleLoc, pixelLoc;
+                        if (node.constraint && node.constraint.type === "map") {
+                            loc = node.constraint.accessor(node.data);
+                            googleLoc = new google.maps.LatLng(loc.lat, loc.lng);
+                            pixelLoc = d.projection.fromLatLngToContainerPixel(googleLoc);
+                            node.mapX = pixelLoc.x;
+                            node.mapY = pixelLoc.y;
+                        }
+                    });
+                    that.force.start();
+                    that._tick();
+                }
+            };
+
+            // Some options for initializing the google map.
+            mapOptions = {
+                zoom: 2,
+                center: new google.maps.LatLng(15, 0),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            this.map = new tangelo.GoogleMapSVG(this.element.get(0), mapOptions, mapConfig);
+            this.map.on(["draw", "drag", "zoom_changed"], mapConfig.draw);
 
             options = $.extend(true, {}, this.options);
             options.data = this.options.data;
@@ -35,13 +67,37 @@
             this._update();
         },
 
+        _setOption: function (key, value) {
+            var that = this;
+            if (key === "constraints") {
+                value.forEach(function (constraint) {
+                    if (that.options.constraints.indexOf(constraint) !== -1) {
+                        //that._updateConstraint(constraint);
+                    } else {
+                        //that._addConstraint(constraint);
+                    }
+                });
+                this.options.constraints.forEach(function (constraint) {
+                    if (value.indexOf(constraint) === -1) {
+                        //that._removeConstraint(constraint);
+                    }
+                });
+            }
+            this._super(key, value);
+        },
+
         _update: function () {
             var that = this,
                 dataNodes = [],
                 colorScale;
 
+            if (!this.svg) {
+                return;
+            }
+
             this.nodes = [];
             this.links = [];
+            this.mapOpacity = 0;
 
             this.options.data.forEach(function (d) {
                 var node = {data: d};
@@ -84,6 +140,12 @@
                         d.x = xScale(constraint.accessor(d.data).x);
                         d.y = yScale(constraint.accessor(d.data).y);
                     };
+                } else if (constraint.type === "map") {
+                    that.mapOpacity = Math.max(that.mapOpacity, constraint.strength);
+                    constraint.constrain = function (d) {
+                        d.x = d.mapX;
+                        d.y = d.mapY;
+                    };
                 } else if (constraint.type === "link") {
                     constraint.constrain = function () {};
                 }
@@ -120,6 +182,9 @@
                 .links(this.links)
                 .start();
 
+            this.svg.selectAll(".link").remove();
+            this.svg.selectAll(".node").remove();
+
             this.link = this.svg.selectAll(".link")
                 .data(this.links);
 
@@ -137,6 +202,8 @@
                 .append("circle")
                 .classed("node", true)
                 .call(this.force.drag)
+                .style("stroke", "#fff")
+                .style("stroke-width", 0.5)
                 .append("title");
 
             colorScale = d3.scale.category10();
@@ -149,10 +216,13 @@
             this.force.on("tick", function () { that._tick.call(that); });
 
             this.force.resume();
+            this.map.trigger("draw");
         },
 
         _tick: function() {
             var that = this;
+
+            $(this.element.get(0)).find("img").css('opacity', this.mapOpacity);
 
             that.nodes.forEach(function (node) {
                 if (node.constraint) {
@@ -169,4 +239,4 @@
                 .attr("cy", function (d) { return d.y; });
         }
     });
-}(window.tangelo, window.jQuery, window.d3));
+}(window.tangelo, window.jQuery, window.d3, window.google));
