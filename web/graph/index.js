@@ -27,10 +27,15 @@ $(function () {
         }
         return query_string;
     }()),
-        reports = query.reports.split(","),
+        reports = query.reports ? query.reports.split(",") : [],
         options;
 
     console.log(query);
+
+    //var loginView = new girder.views.LoginView({
+    //    el: $('body')
+    //});
+    //loginView.render();
 
     d3.json("graph_export_2.json", function (d) {
         console.log(d);

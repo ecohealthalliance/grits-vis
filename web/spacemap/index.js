@@ -5,7 +5,7 @@ $(function () {
 
     $("#control-panel").controlPanel();
 
-    d3.json("../graph/graph_export_2.json", function (d) {
+    d3.json("graph_export_2.json", function (d) {
         var spacemap, constraints;
 
         console.log(d);
@@ -24,6 +24,9 @@ $(function () {
                 d.shortTitle = d.title.split(":")[1];
             }
         });
+
+        // Experiment with different constraints by uncommenting different
+        // array elements here.
 
         constraints = [
         /*
@@ -58,7 +61,7 @@ $(function () {
             {
                 accessor: function (d) { return {lng: d.lon, lat: d.lat}; },
                 type: "map",
-                strength: 0.2
+                strength: 0.5
             }
         ];
 
@@ -67,11 +70,13 @@ $(function () {
             constraints: constraints
         }).data("spacemap");
 
+        /*
         window.setTimeout(function () {
             console.log("hi");
             constraints[0].strength = 1;
             constraints[1].strength = 0.01;
             spacemap.option("constraints", constraints);
         }, 5000);
+*/
     });
 });

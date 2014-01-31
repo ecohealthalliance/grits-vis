@@ -46,14 +46,16 @@
             </div>
 
             <div class=modal-body>
-                <p>Explore the Enron email correspondence network.
-
-                <p>In this app, you can select an email address, a date range, and a
-                degree of separation, and see the resulting network of email
-                correspondence.  For example, selecting
-                <tt>phillip.allen@enron.com</tt>, December 13, 2000, 1 day, and a degree
-                of 2 will show everyone Phillip Allen emailed on that day, and everyone
-                THEY emailed, as a graph.
+                <p>This visualization embeds disease reports in a multi-dimensional space.
+                    The blue dots represent each report. Other colored dots
+                    are constraints, which "pull" the reports to different
+                    concrete or abstract spaces.
+                <p>If a map
+                    constraint is specified, it will be tied to the underlying
+                    map and pull reports to their geolocation. Similarly
+                    other constraints could be mapped to the horizontal or
+                    vertical axis, or may be unconstrained and simply tend
+                    to pull together reports having a common property value.
             </div>
 
             <div class=modal-footer>
@@ -64,12 +66,8 @@
 </div>
 
 <div class="navbar navbar-default navbar-fixed-top">
-    <div class=navbar-header>
-        <a class=navbar-brand href=/examples>Tangelo</a>
-    </div>
-
     <ul class="nav navbar-nav">
-        <li class=active> <a>Enron Email Network</a>
+        <li class=active> <a>Spacemap</a>
         <li><a style="cursor:pointer" data-toggle=modal data-target=#info-panel><span class="glyphicon glyphicon-info-sign"></span> Info</a>
     </ul>
 </div>
@@ -77,38 +75,10 @@
 <div id="vis"></div>
 
 <!-- Create a drawer with the control panel in it -->
-<div id=control-panel>
+<div id="control-panel">
     <div class=container>
         <div class=row>
-            <div class=col-md-3>
-                <!-- JQuery slider -->
-                <h4>Date</h4>
-                <div id=date></div>
-                <code id=date-label></code>
-            </div>
-
-            <div class=col-md-3>
-                <!-- JQuery slider -->
-                <h4>Date range</h4>
-                <div id=range></div>
-                <code id=range-label></code>
-            </div>
-
-            <div class=col-md-3>
-                <h4>Central emailer</h4>
-                <input id=center>
-            </div>
-
-            <div class=col-md-3>
-                <!-- JQuery spinner -->
-                <h4>Degree of separation</h4>
-                <input id=degree>
-            </div>
-        </div>
-
-        <div class=row>
-            <div id=update class="btn btn-success col-md-offset-1 col-md-4">Update</div>
-            <div id=animate class="btn btn-success col-md-offset-2 col-md-4">Animate</div>
+            <h3>Nothing to see here yet. This is where sliders controlling constraint strength would go.</h3>
         </div>
     </div>
 </div>
