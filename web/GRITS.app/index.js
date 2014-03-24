@@ -4,6 +4,7 @@
 $(function () {
     "use strict";
 
+    /*
     var resize = function () {
         var width = $(this).width(),
             height = $(this).height();
@@ -12,12 +13,14 @@ $(function () {
             .html("<b>width: </b>" + width + "<br>" +
                   "<b>height: </b>" + height + "<br>");
     };
-
+    */
     $(window).resize(function () {
         $("div").trigger("resize.div");
     });
-    $(".content").on("resize.div", resize);
-
+    //$(".content").on("resize.div", resize);
     // Create control panel.
     $("#control-panel").controlPanel();
+
+    // place map in upper left
+    $('#upper-left').geojsMap();
 });
