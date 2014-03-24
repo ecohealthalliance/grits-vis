@@ -1,0 +1,90 @@
+<!doctype html>
+<meta charset=utf-8>
+
+<title>Application Template</title>
+
+<script src=http://code.jquery.com/jquery-1.8.2.min.js></script>
+<script src=http://d3js.org/d3.v3.min.js charset=utf-8></script>
+<script src=/js/tangelo.min.js></script>
+<script src=index.js></script>
+
+<link href=http://bootswatch.com/cosmo/bootstrap.min.css rel=stylesheet>
+<link href=//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css rel=stylesheet>
+<script src=http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js></script>
+
+<style>
+    html {
+        height: 100%;
+    }
+
+    body {
+        padding-top: 50px;
+        height: 100%;
+    }
+
+    #control-panel {
+        background-color: lightgray;
+    }
+
+    .fill {
+        height: 100%;
+    }
+
+    .border {
+        border-style: solid;
+        border-width: 1px;
+    }
+</style>
+
+<div id=info-panel class="modal fade">
+    <div class=modal-dialog>
+        <div class=modal-content>
+            <div class=modal-header>
+                <h3>Information</h3>
+            </div>
+
+            <div class=modal-body>
+                A demo showing multiple divs side-by-side, as though each contained its own independent jQuery plugin/widget/etc.
+            </div>
+
+            <div class=modal-footer>
+                <a class="btn btn-default" data-dismiss=modal>OK</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="navbar navbar-default navbar-fixed-top">
+    <div class=navbar-header>
+        <a class=navbar-brand href=/examples>GRITS</a>
+    </div>
+
+    <ul class="nav navbar-nav">
+        <li class=active> <a>MultiDiv</a>
+        <li><a style=cursor:pointer data-toggle=modal data-target=#info-panel><span class="glyphicon glyphicon-info-sign"></span> Info</a>
+    </ul>
+</div>
+
+<!--<h1>MyApp!!</h1>-->
+
+<div style="height:50%" class=row>
+    <div id=upper-left class="border col-md-6 fill content">
+    </div>
+
+    <div id=upper-right class="border col-md-6 fill content">
+    </div>
+</div>
+
+<div style="height:50%" class=row>
+    <div id=lower-left class="border col-md-6 fill content">
+    </div>
+
+    <div id=lower-right class="border col-md-6 fill content">
+    </div>
+</div>
+
+<div id=control-panel>
+    <div>
+        Controls for MyApp.
+    </div>
+</div>
