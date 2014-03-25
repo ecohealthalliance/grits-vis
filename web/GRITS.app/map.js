@@ -25,7 +25,8 @@
                 style: {
                     fill: 'blue',
                     stroke: 'none',
-                    opacity: 0.9
+                    'fill-opacity': 1.0,
+                    'stroke-opacity': 1.0
                 },
                 handlers: {},
                 enter: {
@@ -38,7 +39,8 @@
                         ease: 'cubic-in-out'
                     },
                     style: {
-                        opacity: 0.0
+                        'fill-opacity': 0.0,
+                        'stroke-opacity': 0.0
                     },
                     handlers: {}
                 },
@@ -52,7 +54,8 @@
                         ease: 'cubic-in-out'
                     },
                     style: {
-                        opacity: 0.0
+                        'fill-opacity': 0.0,
+                        'stroke-opacity': 0.0
                     },
                     handlers: {}
                 },

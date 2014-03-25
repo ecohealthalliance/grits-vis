@@ -44,12 +44,14 @@ $(function () {
           [ "ATLANTA","GA","33.754487","-84.389663"]
         ];
     
-    var color = d3.scale.category20().domain(d3.range(20));
+    var color = d3.scale.category20().domain(d3.range(20)),
+        clicked = -1;
 
     // add a new feature group, add some data, and trigger a draw
     map.geojsMap('group', 'points', {
         lat: function (d) { return parseFloat(d[2]); }, // custom accessors
         lng: function (d) { return parseFloat(d[3]); },
+        r: function (d, i) { return i === clicked ? '10pt' : '3pt'; },
         data: table,
         style: {
             fill: function (d, i) { return color(i); },
@@ -64,6 +66,12 @@ $(function () {
             },
             transition: {
                 duration: 1000
+            },
+            handlers: {
+                'click': function (d, i) {
+                    clicked = i;
+                    d3.select(this).transition().attr('r', '10pt');
+                }
             }
         }
     }).trigger('draw');
