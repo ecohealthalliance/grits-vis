@@ -91,7 +91,10 @@
                         .ease(trans.ease || 'cubic-in-out');
         }
 
-        this.draw = function () {
+        this.draw = function (aOpts) {
+            // extract draw options
+            var flushCache = (aOpts || {}).flushCache;
+
             // tell geojs we are modifying the data
             layer.modified();
 
@@ -104,7 +107,7 @@
             // compute geo transform
             opts.data.forEach(function (d) {
                 var pt, lat;
-                if (opts.flushGeoCache || !d.hasOwnProperty(_x) || !d.hasOwnProperty(_y)) {
+                if (flushCache || opts.flushGeoCache || !d.hasOwnProperty(_x) || !d.hasOwnProperty(_y)) {
                     // hack to get around weirdness of geoTransform in geojs...
                     lat = geo.mercator.lat2y(opts.lat(d));
                     pt = ll2xy(geo.latlng(lat, opts.lng(d)));
@@ -120,7 +123,7 @@
             // append elements on enter
             var enter = pts.enter()
                 .append('circle')
-                .attr('class', '.dataPoints');
+                .attr('class', 'dataPoints');
 
             // apply enter style
             applyStyle(enter, opts.enter);
@@ -177,21 +180,17 @@
             
             // resize handler
             function resize() {
-                var groups = m_node.data('_mapGroups');
                 map.resize(0, 0, m_node.width(), m_node.height());
 
                 // georeferencing needs to be recomputed on resize
-                $.map(groups, function (d, id) {
-                    m_node.data('id').flushGeoCache = true;
-                });
-                m_node.trigger('draw');
+                m_node.trigger('draw', { flushCache: true });
             }
 
             // set up data handlers
-            m_node.on('draw', function (evt) {
+            m_node.on('draw', function (evt, opts) {
                 var groups = m_node.data('_mapGroups');
                 $.map(groups, function (g) {
-                    g.draw();
+                    g.draw(opts);
                 });
             });
 
