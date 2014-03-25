@@ -4,22 +4,62 @@
 $(function () {
     "use strict";
 
-    /*
-    var resize = function () {
-        var width = $(this).width(),
-            height = $(this).height();
-
-        d3.select(this)
-            .html("<b>width: </b>" + width + "<br>" +
-                  "<b>height: </b>" + height + "<br>");
-    };
-    */
+    // Register a resize callback for the whole window; cause this to emit
+    // custom resize events on each div.
     $(window).resize(function () {
         $("div").trigger("resize.div");
     });
-    //$(".content").on("resize.div", resize);
+
     // Create control panel.
     $("#control-panel").controlPanel();
+
+    // Install a keyup handler on the text input element - after a specified
+    // delay, this will parse the input and send it to registered listeners.
+    d3.select("#symptoms")
+        .on("keyup", (function () {
+            var wait = null,
+                delay = 500,
+                sendSymptoms;
+
+            sendSymptoms = function (that) {
+                var text,
+                    words;
+
+                // Get the input text.
+                text = d3.select(that)
+                    .property("value")
+                    .trim();
+
+                // Split the input by comma, then trim whitespace off the ends
+                // of each piece.
+                words = text.split(",")
+                    .map(function (w) {
+                        return w.trim();
+                    })
+                    .filter(function (w) {
+                        return w !== "";
+                    });
+
+                // Bail if there are no words.
+                if (words.length === 0) {
+                    return;
+                }
+
+                // TODO: construct an event object (i.e., d3.event, et al.) and
+                // emit an appropriate event here.
+                console.log(words);
+            };
+
+            return function () {
+                // Stop interrupted callbacks from piling up and firing all at
+                // once.
+                if (wait) {
+                    window.clearTimeout(wait);
+                }
+
+                wait = window.setTimeout(sendSymptoms, delay, this);
+            };
+        }()));
 
     // place map in upper left
     var map = $('#upper-left').geojsMap({'zoom': 3});
