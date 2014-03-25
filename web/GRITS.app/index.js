@@ -43,12 +43,39 @@ $(function () {
           [ "SAN FRANCISCO","CA","37.775196","-122.419204"],
           [ "ATLANTA","GA","33.754487","-84.389663"]
         ];
+    
+    var color = d3.scale.category20().domain(d3.range(20));
 
     // add a new feature group, add some data, and trigger a draw
     map.geojsMap('group', 'points', {
         lat: function (d) { return parseFloat(d[2]); }, // custom accessors
         lng: function (d) { return parseFloat(d[3]); },
-        data: table
+        data: table,
+        style: {
+            fill: function (d, i) { return color(i); },
+            stroke: 'black',
+            'stroke-width': '1px',
+            'fill-opacity': 1.0
+        },
+        enter: {
+            style: {
+                fill: function (d, i) { return color(i); },
+                'fill-opacity': 0.0
+            },
+            transition: {
+                duration: 1000
+            }
+        }
     }).trigger('draw');
 
+    window.setInterval(function () {
+        // every 2 seconds rotate the table and redraw with a transition
+        table.push(table.shift());
+        map.geojsMap('group', 'points', {
+            data: table,
+            transition: {
+                ease: 'linear'
+            }
+        }).trigger('draw');
+    }, 2000);
 });

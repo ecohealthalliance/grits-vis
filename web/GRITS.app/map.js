@@ -6,17 +6,15 @@
         var renderer = layer.renderer(),
             svg = renderer.canvas().append('g').attr('id', id),
             ll2xy = renderer.latLngToDisplayGenerator(),
-            center, trans = [0, 0];
+            trans = [0, 0],
+            center;
         
-        center = {
-            x: function () { return jdiv.width()/2; },
-            y: function () { return jdiv.height()/2; }
-        };
-
         // where we keep the geo transformation cache in the data objects
         // we could store it somewhere else, but then we need to deal with dataIndexer
         var _x = '_x_' + id,
             _y = '_y_' + id;
+
+        center = [ jdiv.width()/2, jdiv.height()/2 ];
 
         // set default styles/accessors/data
         jdiv.data(id, {
@@ -31,8 +29,8 @@
                 },
                 handlers: {},
                 enter: {
-                    x: center.x,
-                    y: center.y,
+                    //lat: center.x,
+                    //lng: center.y,
                     r: '0pt',
                     transition: {
                         delay: 0,
@@ -45,8 +43,8 @@
                     handlers: {}
                 },
                 exit: {
-                    x: center.x,
-                    y: center.y,
+                    //lat: center.x,
+                    //lng: center.y,
                     r: '0pt',
                     transition: {
                         delay: 0,
@@ -60,7 +58,7 @@
                 },
                 data: [],
                 dataIndexer: null,
-                flushGeoCache: false  // for recompute of geo transform
+                flushGeoCache: true  // for recompute of geo transform, broken right now
             }
         );
         
@@ -98,9 +96,6 @@
             // tell geojs we are modifying the data
             layer.modified();
 
-            // reset translation
-            this.translate();
-
             // extract styles/accessors
             var opts = jdiv.data(id);
             
@@ -111,15 +106,18 @@
                     // hack to get around weirdness of geoTransform in geojs...
                     lat = geo.mercator.lat2y(opts.lat(d));
                     pt = ll2xy(geo.latlng(lat, opts.lng(d)));
-                    d[_x] = pt.x();
-                    d[_y] = pt.y();
+                    d[_x] = pt.x() - trans[0];
+                    d[_y] = pt.y() - trans[1];
                 }
-                opts.flushGeoCache = false;
+                //opts.flushGeoCache = false;
             });
 
             // create the selection
             var pts = svg.selectAll('.dataPoints').data(opts.data);
             
+            // apply main style/transition
+            applyStyle(applyTransition(pts, opts.transition), opts);
+
             // append elements on enter
             var enter = pts.enter()
                 .append('circle')
@@ -130,9 +128,6 @@
             
             // apply enter style/transition
             applyStyle(applyTransition(enter, opts.enter.transition), opts);
-
-            // apply main style/transition
-            applyStyle(applyTransition(pts, opts.transition), opts);
 
             // apply exit style/transition
             applyStyle(applyTransition(pts.exit(), opts.exit.transition), opts.exit).remove();
