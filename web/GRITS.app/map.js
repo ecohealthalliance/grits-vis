@@ -12,7 +12,7 @@
             x: function () { return jdiv.width()/2; },
             y: function () { return jdiv.height()/2; }
         };
-        
+
         // where we keep the geo transformation cache in the data objects
         // we could store it somewhere else, but then we need to deal with dataIndexer
         var _x = '_x_' + id,
@@ -92,6 +92,9 @@
         }
 
         this.draw = function () {
+            // tell geojs we are modifying the data
+            layer.modified();
+
             // reset translation
             this.translate();
 
@@ -100,9 +103,11 @@
             
             // compute geo transform
             opts.data.forEach(function (d) {
-                var pt;
+                var pt, lat;
                 if (opts.flushGeoCache || !d.hasOwnProperty(_x) || !d.hasOwnProperty(_y)) {
-                    pt = ll2xy(geo.latlng(opts.lat(d), opts.lng(d)));
+                    // hack to get around weirdness of geoTransform in geojs...
+                    lat = geo.mercator.lat2y(opts.lat(d));
+                    pt = ll2xy(geo.latlng(lat, opts.lng(d)));
                     d[_x] = pt.x();
                     d[_y] = pt.y();
                 }
@@ -145,10 +150,8 @@
     // initialize a geojs map inside `elem`
     function initialize(params) {
         var defaults = {
-            mapOpts: {
                 zoom: 2,
                 center: [0, 0]
-            }
         },
             idiv = 0;
         params = $.extend(true, {}, defaults, params);
@@ -167,7 +170,7 @@
             }
 
             // create the map and layers
-            var mapOpts = $.extend({ node: divID }, params.mapOpts),
+            var mapOpts = $.extend({ node: divID }, params),
                 map = geo.map(mapOpts),
                 osm = geo.osmLayer({'renderer': 'vglRenderer'}).referenceLayer(true),
                 layer = geo.featureLayer({'renderer': 'd3Renderer'});

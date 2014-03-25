@@ -22,7 +22,7 @@ $(function () {
     $("#control-panel").controlPanel();
 
     // place map in upper left
-    var map = $('#upper-left').geojsMap();
+    var map = $('#upper-left').geojsMap({'zoom': 3});
 
 
     var table = [
