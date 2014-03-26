@@ -73,7 +73,7 @@ $(function () {
         $(node).popover({
             html: true,
             container: 'body',
-            placement: 'top',
+            placement: 'auto top',
             trigger: 'manual',
             content: msg.join('<br>\n')
         });
@@ -81,13 +81,31 @@ $(function () {
 
     // add a new feature group, add some data, and trigger a draw
     loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 200, function (data) {
+        var symptoms = [],
+            defaultFill = 1.0,
+            unselectFill = 0.05;
+        function intersectSymptoms(d) {
+            var found = false;
+            if (!symptoms.length) {
+                return true;
+            }
+            symptoms.forEach(function (symptom) {
+                d.symptoms.forEach(function (s) {
+                    if (s.toLowerCase() === symptom) {
+                        found = true;
+                    }
+                });
+            });
+            return found;
+        }
         map.geojsMap('group', 'points', {
             lat: function (d) { return d.meta.latitude; },
             lng: function (d) { return d.meta.longitude; },
             r: '5pt',
             data: data,
             style: {
-                fill: function (d, i) { return color(i % 10); }
+                fill: function (d, i) { return color(i % 4); },
+                'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; }
             },
             handlers: {
                 'click': function (d) {
@@ -100,14 +118,27 @@ $(function () {
                     $(this).popover('hide');
                 }
             },
-            each: function (d) {
-                var link = d3.select(this.parentNode).append('svg:a')
-                    .attr('xlink:href', d.meta.link)
-                    .attr('target', 'healthMapInfo');
-                $(link.node()).prepend(this);
-                makePopOver(this, d);
+            enter: {
+                each: function (d) {
+                    var link = d3.select(this.parentNode).append('svg:a')
+                        .attr('xlink:href', d.meta.link)
+                        .attr('target', 'healthMapInfo');
+                    $(link.node()).prepend(this);
+                    makePopOver(this, d);
+                }
             }
         }).trigger('draw');
+        map.on('symptoms', function (e) {
+            symptoms = [];
+            $.each(e.symptoms, function (i, v) {
+                symptoms.push(v.toLowerCase());
+            });
+            map.geojsMap('group', 'points', {
+                transition: {
+                    duration: 1000
+                }
+            }).trigger('draw');
+        });
     });
 
     // ***** DENDROGRAM in lower right *****
