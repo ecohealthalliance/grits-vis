@@ -40,14 +40,12 @@ $(function () {
                         return w !== "";
                     });
 
-                // Bail if there are no words.
-                if (words.length === 0) {
-                    return;
-                }
-
-                // TODO: construct an event object (i.e., d3.event, et al.) and
-                // emit an appropriate event here.
-                console.log(words);
+                // Construct and dispatch an event object that has the symptom
+                // list in it.
+                $.event.trigger({
+                    type: "symptoms",
+                    symptoms: words
+                });
             };
 
             return function () {
@@ -119,6 +117,10 @@ $(function () {
             function followPath(node, symptoms){
                 var way;
 
+                if (Object.keys(symptoms).length === 0) {
+                    return;
+                }
+
                 if (!node.children || node.children.length === 0) {
                     node.color = "red";
                 } else {
@@ -126,6 +128,22 @@ $(function () {
 
                     way = symptoms.hasOwnProperty(node.symptom.name.toLowerCase()) ? 0 : 1;
                     followPath(node.children[way], symptoms);
+                }
+            }
+
+            function restoreDefaultColor(node){
+                var way;
+
+                if (node.collapsed) {
+                    node.color = "blue";
+                } else {
+                    node.color = "lightsteelblue";
+                }
+
+                if (node.children) {
+                    $.each(node.children, function (i, v) {
+                        restoreDefaultColor(v);
+                    });
                 }
             }
 
@@ -194,6 +212,17 @@ $(function () {
                 if (d3.event.shiftKey) {
                     this.action("collapse").call(elt, d, i);
                 }
+            });
+
+            $("#lower-right").on("symptoms", function (e) {
+                var symptoms = {};
+                $.each(e.symptoms, function (i, v) {
+                    symptoms[v.toLowerCase()] = true;
+                });
+
+                restoreDefaultColor($(this).dendrogram("option", "data"));
+                followPath($(this).dendrogram("option", "data"), symptoms);
+                $(this).dendrogram("refresh");
             });
         });
     }());
