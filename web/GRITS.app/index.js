@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*globals d3, $ */
+/*globals d3, $, loadHealthMapData */
 
 $(function () {
     "use strict";
@@ -48,45 +48,19 @@ $(function () {
         clicked = -1;
 
     // add a new feature group, add some data, and trigger a draw
-    map.geojsMap('group', 'points', {
-        lat: function (d) { return parseFloat(d[2]); }, // custom accessors
-        lng: function (d) { return parseFloat(d[3]); },
-        r: function (d, i) { return i === clicked ? '10pt' : '3pt'; },
-        data: table,
-        style: {
-            fill: function (d, i) { return color(i); },
-            stroke: 'black',
-            'stroke-width': '1px',
-            'fill-opacity': 1.0
-        },
-        enter: {
-            style: {
-                fill: function (d, i) { return color(i); },
-                'fill-opacity': 0.0
-            },
-            transition: {
-                duration: 1000
-            },
+    loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 1000, function (data) {
+        map.geojsMap('group', 'points', {
+            lat: function (d) { return d.meta.latitude; },
+            lng: function (d) { return d.meta.longitude; },
+            data: data,
             handlers: {
                 'click': function (d, i) {
-                    clicked = i;
-                    d3.select(this).transition().attr('r', '10pt');
+                    console.log(d);
                 }
             }
-        }
-    }).trigger('draw');
-
-    window.setInterval(function () {
-        // every 2 seconds rotate the table and redraw with a transition
-        table.push(table.shift());
-        map.geojsMap('group', 'points', {
-            data: table,
-            transition: {
-                ease: 'linear'
-            }
         }).trigger('draw');
-    }, 2000);
-    
+    });
+
     // ***** DENDROGRAM in lower right *****
     (function () {
         var getChildren = function (node) {

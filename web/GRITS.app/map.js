@@ -1,5 +1,5 @@
 /*jslint browser: true, unparam: true*/
-(function ($, geo) {
+(function ($, geo, d3) {
     
     // create a group of markers inside the given geojs layer
     function GeoApplicationGroup(id, layer, jdiv) {
@@ -68,6 +68,11 @@
         // apply styling rules to a selection
         function applyStyle(s, opts) {
             var key;
+            function addHandler(event, handler) {
+                return function () {
+                    d3.select(this).on(event, handler);
+                };
+            }
             s
                 .attr('cx', function (d) { return d[_x]; })
                 .attr('cy', function (d) { return d[_y]; })
@@ -75,7 +80,7 @@
                 .style(opts.style);
             for (key in opts.handlers) {
                 if (opts.handlers.hasOwnProperty(key)) {
-                    s.on(key, opts.handlers[key]);
+                    s.each(addHandler(key, opts.handlers[key]));
                 }
             }
             return s;
@@ -257,4 +262,4 @@
 
         return r;
     };
-}(window.$, window.geo));
+}(window.$, window.geo, window.d3));

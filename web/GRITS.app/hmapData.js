@@ -53,9 +53,9 @@
         return symptoms;
     }
 
-    function loadData(startDate, endDate, limit, callBack) {
+    window.loadHealthMapData = function (startDate, endDate, limit, callBack) {
         $.ajax({
-            url: '/girder/api/v1/resource/mongo_search',  // girder url from config
+            url: '/girder/api/v1/resource/mongo_search',
             dataType: 'json',
             data: {
                 type: 'item',
@@ -93,12 +93,13 @@
                         data.forEach(function (d) {
                             d.symptoms = generateSymptoms();
                         });
+                        callBack(data);
                 },
                     function () {      // fail
+                        alert('Girder data failed to load');
                 });
             }
         });
-    }
+    };
 
-    loadData({}, new Date(2014, 2, 24), new Date(2014, 2, 26), 10, function () {});
 }(window.$));
