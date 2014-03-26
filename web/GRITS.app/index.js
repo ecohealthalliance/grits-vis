@@ -83,7 +83,7 @@ $(function () {
     loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 200, function (data) {
         var symptoms = [],
             defaultFill = 1.0,
-            unselectFill = 0.05;
+            unselectFill = 1e-6;
         function intersectSymptoms(d) {
             var found = false;
             if (!symptoms.length) {
@@ -101,7 +101,7 @@ $(function () {
         map.geojsMap('group', 'points', {
             lat: function (d) { return d.meta.latitude; },
             lng: function (d) { return d.meta.longitude; },
-            r: '5pt',
+            r: function (d) { return intersectSymptoms(d) ? '5pt' : '0pt'; },
             data: data,
             style: {
                 fill: function (d, i) { return color(i % 4); },
