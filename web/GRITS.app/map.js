@@ -29,6 +29,7 @@
                     'stroke-opacity': 1.0
                 },
                 handlers: {},
+                each: function () {},
                 enter: {
                     //lat: center.x,
                     //lng: center.y,
@@ -82,6 +83,9 @@
                 if (opts.handlers.hasOwnProperty(key)) {
                     s.each(addHandler(key, opts.handlers[key]));
                 }
+            }
+            if (opts.each) {
+                s.each(opts.each);
             }
             return s;
         }

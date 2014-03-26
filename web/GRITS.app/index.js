@@ -44,19 +44,51 @@ $(function () {
           [ "ATLANTA","GA","33.754487","-84.389663"]
         ];
     
-    var color = d3.scale.category20().domain(d3.range(20)),
-        clicked = -1;
+    var color = d3.scale.category10().domain(d3.range(20));
+    
+    function makePopOver(node, data) {
+        var msg = [];
+        msg.push('<b>Summary:</b> ' + data.description);
+        msg.push('<b>Date:</b> ' + data.meta.date.toString());
+        msg.push('<b>Location:</b> ' + data.meta.country);
+        msg.push('<b>Disease:</b> ' + data.meta.disease);
+        msg.push('<b>Symptoms:</b> ' + data.symptoms.join(', '));
+        $(node).popover({
+            html: true,
+            container: 'body',
+            placement: 'top',
+            trigger: 'manual',
+            content: msg.join('<br>\n')
+        });
+    }
 
     // add a new feature group, add some data, and trigger a draw
-    loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 1000, function (data) {
+    loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 200, function (data) {
         map.geojsMap('group', 'points', {
             lat: function (d) { return d.meta.latitude; },
             lng: function (d) { return d.meta.longitude; },
+            r: '5pt',
             data: data,
+            style: {
+                fill: function (d, i) { return color(i % 10); }
+            },
             handlers: {
-                'click': function (d, i) {
+                'click': function (d) {
                     console.log(d);
+                },
+                'mouseover': function () {
+                    $(this).popover('show');
+                },
+                'mouseout': function () {
+                    $(this).popover('hide');
                 }
+            },
+            each: function (d) {
+                var link = d3.select(this.parentNode).append('svg:a')
+                    .attr('xlink:href', d.meta.link)
+                    .attr('target', 'healthMapInfo');
+                $(link.node()).prepend(this);
+                makePopOver(this, d);
             }
         }).trigger('draw');
     });
