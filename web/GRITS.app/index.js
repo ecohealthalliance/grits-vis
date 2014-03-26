@@ -4,22 +4,60 @@
 $(function () {
     "use strict";
 
-    /*
-    var resize = function () {
-        var width = $(this).width(),
-            height = $(this).height();
-
-        d3.select(this)
-            .html("<b>width: </b>" + width + "<br>" +
-                  "<b>height: </b>" + height + "<br>");
-    };
-    */
+    // Register a resize callback for the whole window; cause this to emit
+    // custom resize events on each div.
     $(window).resize(function () {
         $("div").trigger("resize.div");
     });
-    //$(".content").on("resize.div", resize);
+
     // Create control panel.
     $("#control-panel").controlPanel();
+
+    // Install a keyup handler on the text input element - after a specified
+    // delay, this will parse the input and send it to registered listeners.
+    d3.select("#symptoms")
+        .on("keyup", (function () {
+            var wait = null,
+                delay = 500,
+                sendSymptoms;
+
+            sendSymptoms = function (that) {
+                var text,
+                    words;
+
+                // Get the input text.
+                text = d3.select(that)
+                    .property("value")
+                    .trim();
+
+                // Split the input by comma, then trim whitespace off the ends
+                // of each piece.
+                words = text.split(",")
+                    .map(function (w) {
+                        return w.trim();
+                    })
+                    .filter(function (w) {
+                        return w !== "";
+                    });
+
+                // Construct and dispatch an event object that has the symptom
+                // list in it.
+                $.event.trigger({
+                    type: "symptoms",
+                    symptoms: words
+                });
+            };
+
+            return function () {
+                // Stop interrupted callbacks from piling up and firing all at
+                // once.
+                if (wait) {
+                    window.clearTimeout(wait);
+                }
+
+                wait = window.setTimeout(sendSymptoms, delay, this);
+            };
+        }()));
 
     // place map in upper left
     var map = $('#upper-left').geojsMap({'zoom': 3});
@@ -100,6 +138,10 @@ $(function () {
             function followPath(node, symptoms){
                 var way;
 
+                if (Object.keys(symptoms).length === 0) {
+                    return;
+                }
+
                 if (!node.children || node.children.length === 0) {
                     node.color = "red";
                 } else {
@@ -107,6 +149,22 @@ $(function () {
 
                     way = symptoms.hasOwnProperty(node.symptom.name.toLowerCase()) ? 0 : 1;
                     followPath(node.children[way], symptoms);
+                }
+            }
+
+            function restoreDefaultColor(node){
+                var way;
+
+                if (node.collapsed) {
+                    node.color = "blue";
+                } else {
+                    node.color = "lightsteelblue";
+                }
+
+                if (node.children) {
+                    $.each(node.children, function (i, v) {
+                        restoreDefaultColor(v);
+                    });
                 }
             }
 
@@ -175,6 +233,17 @@ $(function () {
                 if (d3.event.shiftKey) {
                     this.action("collapse").call(elt, d, i);
                 }
+            });
+
+            $("#lower-right").on("symptoms", function (e) {
+                var symptoms = {};
+                $.each(e.symptoms, function (i, v) {
+                    symptoms[v.toLowerCase()] = true;
+                });
+
+                restoreDefaultColor($(this).dendrogram("option", "data"));
+                followPath($(this).dendrogram("option", "data"), symptoms);
+                $(this).dendrogram("refresh");
             });
         });
     }());
