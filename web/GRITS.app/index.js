@@ -19,7 +19,9 @@ $(function () {
         currentData  = [],
         defaultStart = new Date(2014, 1, 15),
         defaultEnd = new Date(2014, 1, 17),
-        _symptoms = [];
+        _symptoms = [],
+        _queryLimit = 50,
+        _selectedDateRange;
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -163,10 +165,11 @@ $(function () {
         // add a new feature group, add some data, and trigger a draw
         var dataStart = dates.values.min,
             dataEnd   = dates.values.max;
-        loadHealthMapData(dataStart, dataEnd, 200, function (data) {
-            var defaultFill = 0.8,
+        _selectedDateRange = dates;
+        loadHealthMapData(dataStart, dataEnd, _queryLimit, function (data) {
+            var defaultFill = 0.9,
                 unselectFill = 1e-6,
-                cscale = colorbrewer.Reds[3],
+                cscale = colorbrewer.YlGnBu[3],
                 midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
                 color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true),
                 series = [],
@@ -190,10 +193,7 @@ $(function () {
                 lat: function (d) { return d.meta.latitude; },
                 lng: function (d) { return d.meta.longitude; },
                 r: function (d) {
-                    //if (intersectSymptoms(d)) {
-                        return (d.meta.rating * 3).toString() + 'pt';
-                    //}
-                    //return '0pt';
+                        return '5pt';
                 },
                 data: data,
                 dataIndexer: function (d) { 
@@ -271,6 +271,11 @@ $(function () {
             }
         }).trigger('draw');
     });
+
+    $('#dataLimit').change(function (evt) {
+        _queryLimit = parseInt($(this).val(), 10);
+        $('#dateRangeSlider').trigger('valuesChanged', _selectedDateRange);
+    }).val(_queryLimit.toString());
 
 
     // ***** SPACEMAP in upper right *****
