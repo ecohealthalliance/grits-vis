@@ -174,6 +174,8 @@ $(function () {
                 color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true),
                 series = [],
                 seriesMap = {};
+            
+            $('#itemNumber').text(data.length.toString() + " records loaded");
 
             function intersectSymptoms(d) {
                 var found = false;
