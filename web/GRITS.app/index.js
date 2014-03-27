@@ -18,7 +18,8 @@ $(function () {
         ],
         currentData  = [],
         defaultStart = new Date(2014, 1, 15),
-        defaultEnd = new Date(2014, 1, 17);
+        defaultEnd = new Date(2014, 1, 17),
+        _symptoms = [];
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -162,9 +163,8 @@ $(function () {
         // add a new feature group, add some data, and trigger a draw
         var dataStart = dates.values.min,
             dataEnd   = dates.values.max;
-        loadHealthMapData(dataStart, dataEnd, 1000, function (data) {
-            var symptoms = [],
-                defaultFill = 1.0,
+        loadHealthMapData(dataStart, dataEnd, 200, function (data) {
+            var defaultFill = 0.8,
                 unselectFill = 1e-6,
                 cscale = colorbrewer.Reds[3],
                 midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
@@ -174,10 +174,10 @@ $(function () {
 
             function intersectSymptoms(d) {
                 var found = false;
-                if (!symptoms.length) {
+                if (!_symptoms.length) {
                     return true;
                 }
-                symptoms.forEach(function (symptom) {
+                _symptoms.forEach(function (symptom) {
                     d.symptoms.forEach(function (s) {
                         if (s.toLowerCase() === symptom) {
                             found = true;
@@ -190,20 +190,26 @@ $(function () {
                 lat: function (d) { return d.meta.latitude; },
                 lng: function (d) { return d.meta.longitude; },
                 r: function (d) {
-                    if (intersectSymptoms(d)) {
+                    //if (intersectSymptoms(d)) {
                         return (d.meta.rating * 3).toString() + 'pt';
-                    }
-                    return '0pt';
+                    //}
+                    //return '0pt';
                 },
                 data: data,
-                dataIndexer: function (d) { return d._id; },
+                dataIndexer: function (d) { 
+                    return d._id; 
+                },
                 style: {
                     fill: function (d) {
                         return color(d.meta.date);
                     },
                     'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
+                    'stroke-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
                     'stroke': 'black',
-                    'stroke-width': '0.5pt'
+                    'stroke-width': '0.5pt',
+                    'pointer-events': function (d) {
+                        return intersectSymptoms(d) ? 'auto' : 'none';
+                    }
                 },
                 handlers: {
                     'click': function (d) {
@@ -218,26 +224,14 @@ $(function () {
                 },
                 enter: {
                     each: function (d) {
-                        var link = d3.select(this.parentNode).append('svg:a')
+                   /*     var link = d3.select(this.parentNode).append('svg:a')
                             .attr('xlink:href', d.meta.link)
                             .attr('target', 'healthMapInfo');
-                        $(link.node()).prepend(this);
+                        $(link.node()).prepend(this); */
                         makePopOver(this, d);
                     }
                 }
             }).trigger('draw');
-            map.on('symptoms', function (e) {
-                symptoms = [];
-                $.each(e.symptoms, function (i, v) {
-                    symptoms.push(v.toLowerCase());
-                });
-                map.geojsMap('group', 'points', {
-                    transition: {
-                        duration: 1000
-                    }
-                }).trigger('draw');
-            });
-
             // Update spacemap
             updateData(data);
 
@@ -266,13 +260,18 @@ $(function () {
         });
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
 
+    map.on('symptoms', function (e) {
+        _symptoms = [];
+        $.each(e.symptoms, function (i, v) {
+            _symptoms.push(v.toLowerCase());
+        });
+        map.geojsMap('group', 'points', {
+            transition: {
+                duration: 1000
+            }
+        }).trigger('draw');
+    });
 
-    // add a new feature group, add some data, and trigger a draw
-    map.geojsMap('group', 'points', {
-        lat: function (d) { return parseFloat(d[2]); }, // custom accessors
-        lng: function (d) { return parseFloat(d[3]); },
-        data: []
-    }).trigger('draw');
 
     // ***** SPACEMAP in upper right *****
     $("#distance-slider").slider({

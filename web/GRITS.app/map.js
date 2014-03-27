@@ -127,6 +127,9 @@
             // create the selection
             var pts = svg.selectAll('.dataPoints').data(opts.data, opts.dataIndexer);
             
+            // apply exit style/transition
+            applyStyle(applyTransition(pts.exit(), opts.exit.transition), opts.exit).remove();
+
             // apply main style/transition
             applyStyle(applyTransition(pts, opts.transition), opts);
 
@@ -140,9 +143,6 @@
             
             // apply enter style/transition
             applyStyle(applyTransition(enter, opts.enter.transition), opts);
-
-            // apply exit style/transition
-            applyStyle(applyTransition(pts.exit(), opts.exit.transition), opts.exit).remove();
 
             // reset main transition
             jdiv.data({transition: null});
@@ -251,7 +251,13 @@
 
         // set if opts is defined
         if (opts !== undefined && id !== undefined) {
+            
+            if (opts.data) {
+                m_node.data(id).data = [];
+            }
+
             $.extend(true, m_node.data(id), opts);
+
             return this;
         }
 
