@@ -18,8 +18,7 @@ $(function () {
         ],
         currentData  = [],
         defaultStart = new Date(2014, 1, 15),
-        defaultEnd = new Date(2014, 1, 17),
-        timeline;
+        defaultEnd = new Date(2014, 1, 17);
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -169,7 +168,9 @@ $(function () {
                 unselectFill = 1e-6,
                 cscale = colorbrewer.Reds[3],
                 midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
-                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
+                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true),
+                series = [],
+                seriesMap = {};
 
             function intersectSymptoms(d) {
                 var found = false;
@@ -239,6 +240,29 @@ $(function () {
 
             // Update spacemap
             updateData(data);
+
+            // Update timeline
+
+            // Bin the data by hour
+            data.forEach(function (d) {
+                var hour = new Date(d.meta.date);
+                hour.setMinutes(0);
+                hour.setSeconds(0);
+                hour.setMilliseconds(0);
+                if (!seriesMap[hour]) {
+                    seriesMap[hour] = {date: hour, count: 0};
+                    series.push(seriesMap[hour]);
+                }
+                seriesMap[hour].count += 1;
+            });
+            series.sort(function (a, b) { return d3.ascending(a.date, b.date); });
+            $('#lower-left').empty();
+            $('#lower-left').timeline({
+                data: series,
+                date: {field: "date"},
+                y: [{field: "count"}]
+            });
+
         });
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
 
@@ -366,23 +390,6 @@ $(function () {
         if (dataStack.length > 0) {
             updateData(dataStack.pop());
         }
-    });
-
-    // ***** TIMELINE in lower left *****
-    // var data = [
-    //     {date: new Date('1-1-2013'), y1: 4, y2: 10},
-    //     {date: new Date('2-1-2013'), y1: 5, y2: 9},
-    //     {date: new Date('3-1-2013'), y1: 6, y2: 8},
-    //     {date: new Date('4-1-2013'), y1: 7, y2: 7},
-    //     {date: new Date('5-1-2013'), y1: 8, y2: 6},
-    //     {date: new Date('6-1-2013'), y1: 9, y2: 5},
-    //     {date: new Date('7-1-2013'), y1: 10, y2: 4}
-    // ];
-
-    timeline = $('#lower-left').timeline({
-        data: currentData,
-        date: {field: "date"},
-        y: [{field: "y1"}, {field: "y2"}]
     });
 
     // ***** DENDROGRAM in lower right *****

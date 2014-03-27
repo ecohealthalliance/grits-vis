@@ -1,5 +1,5 @@
 {
-  "width": 400,
+  "width": 600,
   "height": 400,
   "padding": {"top": 10, "left": 100, "bottom": 40, "right": 40},
   "data": [
@@ -27,7 +27,7 @@
   ],
   "axes": [
     {"type": "x", "scale": "x"},
-    {"type": "y", "scale": "y", "format": "e"}
+    {"type": "y", "scale": "y", "format": "g"}
   ],
   "marks": [
     {

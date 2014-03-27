@@ -18,7 +18,7 @@
         spec.y = tangelo.isArray(spec.y) ? spec.y : [spec.y];
         y = [];
         spec.y.forEach(function (row) {
-            var accessor = tangelo.accessor(row, 0);
+            var accessor = tangelo.accessor(row, undefined);
             accessor.field = row.field;
             y.push(accessor);
         });
