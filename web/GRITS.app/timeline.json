@@ -45,7 +45,8 @@
               "y": {"scale": "y", "field": "data.y"},
               "stroke": {"scale": "color", "field": "data.group"},
               "strokeWidth": {"value": 1},
-              "strokeOpacity": {"value": 1}
+              "strokeOpacity": {"value": 1},
+              "interpolate": {"value": "basis"}
             }
           }
         },
