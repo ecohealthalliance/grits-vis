@@ -80,7 +80,9 @@ $(function () {
     }
 
     // add a new feature group, add some data, and trigger a draw
-    loadHealthMapData(new Date(2014, 2, 1), new Date(2014, 2, 7), 200, function (data) {
+    var dataStart = new Date(2014, 2, 1),
+        dataEnd   = new Date(2014, 2, 7);
+    loadHealthMapData(dataStart, dataEnd, 200, function (data) {
         var symptoms = [],
             defaultFill = 1.0,
             unselectFill = 1e-6;
@@ -103,6 +105,7 @@ $(function () {
             lng: function (d) { return d.meta.longitude; },
             r: function (d) { return intersectSymptoms(d) ? '5pt' : '0pt'; },
             data: data,
+            dataIndex: function (d) { return d._id; },
             style: {
                 fill: function (d, i) { return color(i % 4); },
                 'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; }
