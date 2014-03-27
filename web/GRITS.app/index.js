@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*globals d3, $, loadHealthMapData */
+/*globals d3, $, loadHealthMapData, colorbrewer */
 
 $(function () {
     "use strict";
@@ -61,7 +61,6 @@ $(function () {
 
     // place map in upper left
     var map = $('#upper-left').geojsMap({'zoom': 3});
-    var color = d3.scale.category10().domain(d3.range(20));
     
     function makePopOver(node, data) {
         var msg = [];
@@ -81,11 +80,15 @@ $(function () {
 
     // add a new feature group, add some data, and trigger a draw
     var dataStart = new Date(2014, 2, 1),
-        dataEnd   = new Date(2014, 2, 7);
-    loadHealthMapData(dataStart, dataEnd, 200, function (data) {
+        dataEnd   = new Date(2014, 2, 3);
+    loadHealthMapData(dataStart, dataEnd, 1000, function (data) {
         var symptoms = [],
             defaultFill = 1.0,
-            unselectFill = 1e-6;
+            unselectFill = 1e-6,
+            cscale = colorbrewer.Reds[3],
+            midDate = new Date((dataStart.valueOf() + dataEnd.valueOf())/2),
+            color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
+
         function intersectSymptoms(d) {
             var found = false;
             if (!symptoms.length) {
@@ -103,12 +106,21 @@ $(function () {
         map.geojsMap('group', 'points', {
             lat: function (d) { return d.meta.latitude; },
             lng: function (d) { return d.meta.longitude; },
-            r: function (d) { return intersectSymptoms(d) ? '5pt' : '0pt'; },
+            r: function (d) {
+                if (intersectSymptoms(d)) {
+                    return (d.meta.rating * 3).toString() + 'pt';
+                }
+                return '0pt';
+            },
             data: data,
             dataIndex: function (d) { return d._id; },
             style: {
-                fill: function (d, i) { return color(i % 4); },
-                'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; }
+                fill: function (d) { 
+                    return color(d.meta.date);
+                },
+                'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
+                'stroke': 'black',
+                'stroke-width': '0.5pt'
             },
             handlers: {
                 'click': function (d) {

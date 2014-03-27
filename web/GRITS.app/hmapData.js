@@ -91,6 +91,14 @@
                 $.when.apply($, itemRequests).then(
                     function () {      // success
                         data.forEach(function (d) {
+                            var dateTime = d.meta.date.split(' '),
+                                date = dateTime[0].split('-'),
+                                time = dateTime[1].split(':');
+                            dateTime = new Date(date[0], date[1] - 1, date[2]);
+                            dateTime.setHours(time[0]);
+                            dateTime.setMinutes(time[1]);
+                            dateTime.setSeconds(time[2]);
+                            d.meta.date = dateTime;
                             d.symptoms = generateSymptoms();
                         });
                         callBack(data);
