@@ -89,6 +89,206 @@ $(function () {
         data: table
     }).trigger('draw');
 
+    // ***** SPACEMAP in upper right *****
+    d3.json("../spacemap/graph_export_2.json", function () {
+        var constraints = [],
+            spacemap,
+            dataStack = [],
+            data,
+            types = [
+                "link",
+                "x",
+                "y",
+                "ordinalx",
+                "ordinaly",
+                "xy",
+                "map"
+            ];
+
+        function updateData(d) {
+            var fieldMap = {},
+                fields = [];
+
+            // data = d;
+
+            data = d.nodes.slice(10);
+            data.forEach(function (d) {
+                d.lat = +d.lat;
+                d.lon = +d.lon;
+                d.random = Math.random();
+                d.category = Math.round(Math.random() * 10);
+                d.time = new Date();
+                if (d.title.indexOf(">") >= 0) {
+                    d.shortTitle = d.title.split(">")[1].split("-")[0];
+                } else {
+                    d.shortTitle = d.title.split(":")[1];
+                }
+            });
+
+            // Discover fields
+            data.forEach(function (d) {
+                var field;
+                for (field in d) {
+                    if (d.hasOwnProperty(field) && !fieldMap[field]) {
+                        fieldMap[field] = true;
+                        fields.push(field);
+                    }
+                }
+            });
+
+            spacemap = $("#upper-right").spacemap({
+                data: data,
+                constraints: constraints
+            }).data("spacemap");
+
+            d3.select("#field-select").selectAll("option")
+                .data(fields)
+                .enter().append("option")
+                .attr("value", function (d) { return d; })
+                .text(function (d) { return d; });
+
+        }
+
+        $("#distance-slider").slider({
+            min: 0,
+            max: 100,
+            value: 20,
+            step: 1,
+            change: function (evt, ui) {
+                spacemap.option("linkDistance", ui.value);
+            },
+            slide: function (evt, ui) {
+                spacemap.option("linkDistance", ui.value);
+            }
+        });
+
+        $("#charge-slider").slider({
+            min: 0,
+            max: 100,
+            value: 30,
+            step: 1,
+            change: function (evt, ui) {
+                spacemap.option("charge", -ui.value);
+            },
+            slide: function (evt, ui) {
+                spacemap.option("charge", -ui.value);
+            }
+        });
+
+        $("#gravity-slider").slider({
+            min: 0,
+            max: 0.2,
+            value: 0.1,
+            step: 0.001,
+            change: function (evt, ui) {
+                spacemap.option("gravity", ui.value);
+            },
+            slide: function (evt, ui) {
+                spacemap.option("gravity", ui.value);
+            }
+        });
+
+        $("#add-button").click(function () {
+            var field = $("#field-select").val(),
+                row = $('<div class="form-group"></div>'),
+                label = $('<label class="col-sm-2 control-label">' + field + '</label>'),
+                sliderCol = $('<div class="col-sm-7"></div>'),
+                slider = $('<div></div>'),
+                typeCol = $('<div class="col-sm-3"></div>'),
+                type = $('<select class="form-control"></select>'),
+                constraint = {
+                    name: field,
+                    accessor: tangelo.accessor({field: field}),
+                    type: "link",
+                    strength: 0.5
+                };
+
+            d3.select(type.get(0)).selectAll("option")
+                .data(types)
+                .enter().append("option")
+                .attr("value", function (d) { return d; })
+                .text(function (d) { return d; });
+            type.on("change", function () {
+                constraint.type = type.val();
+                spacemap.option("constraints", constraints);
+            });
+
+            constraints.push(constraint);
+            sliderCol.append(slider);
+            typeCol.append(type);
+            row.append(label);
+            row.append(sliderCol);
+            row.append(typeCol);
+            $("#constraints").append(row);
+            slider.slider({
+                min: 0,
+                max: 1,
+                value: 0.5,
+                step: 0.01,
+                change: function (evt, ui) {
+                    constraint.strength = ui.value;
+                    spacemap.option("constraints", constraints);
+                },
+                slide: function (evt, ui) {
+                    constraint.strength = ui.value;
+                    spacemap.option("constraints", constraints);
+                }
+            });
+            spacemap.option("constraints", constraints);
+        });
+
+        $("#add-data-button").click(function () {
+            var like = data.map(function(d) { return d._id.$oid; }).join(","),
+                fields = constraints.map(function(d) { return d.name + ":" + d.strength; }).join(",");
+
+            d3.json("healthmap?like=" + like + "&limit=50&fields=" + fields, function (newData) {
+                // Add new data to the data array
+                var idMap = {};
+                if (newData.length === 0) {
+                    return;
+                }
+                newData.forEach(function (d) {
+                    idMap[d._id.$oid] = true;
+                });
+                data.forEach(function (d) {
+                    if (!idMap[d._id.$oid]) {
+                        newData.push(d);
+                    }
+                });
+                dataStack.push(data);
+                updateData(newData);
+            });
+        });
+
+        $("#undo-button").click(function () {
+            if (dataStack.length > 0) {
+                updateData(dataStack.pop());
+            }
+        });
+
+        d3.json("../spacemap/graph_export_2.json", function (data) {
+            updateData(data);
+        });
+
+    });
+
+    // ***** TIMELINE in lower left *****
+    var data = [
+        {date: new Date('1-1-2013'), y1: 4, y2: 10},
+        {date: new Date('2-1-2013'), y1: 5, y2: 9},
+        {date: new Date('3-1-2013'), y1: 6, y2: 8},
+        {date: new Date('4-1-2013'), y1: 7, y2: 7},
+        {date: new Date('5-1-2013'), y1: 8, y2: 6},
+        {date: new Date('6-1-2013'), y1: 9, y2: 5},
+        {date: new Date('7-1-2013'), y1: 10, y2: 4}
+    ];
+
+    var timeline = $('#lower-left').timeline({
+        data: data,
+        date: {field: "date"},
+        y: [{field: "y1"}, {field: "y2"}]
+    });
+
     // ***** DENDROGRAM in lower right *****
     (function () {
         var getChildren = function (node) {
