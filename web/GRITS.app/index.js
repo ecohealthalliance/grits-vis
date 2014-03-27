@@ -113,7 +113,7 @@ $(function () {
                 return '0pt';
             },
             data: data,
-            dataIndex: function (d) { return d._id; },
+            dataIndexer: function (d) { return d._id; },
             style: {
                 fill: function (d) { 
                     return color(d.meta.date);

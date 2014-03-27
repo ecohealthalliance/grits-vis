@@ -144,6 +144,9 @@
             // apply exit style/transition
             applyStyle(applyTransition(pts.exit(), opts.exit.transition), opts.exit).remove();
 
+            // reset main transition
+            jdiv.data({transition: null});
+
         };
 
         this.translate = function (t) {
