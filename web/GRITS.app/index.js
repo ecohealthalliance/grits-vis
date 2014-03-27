@@ -21,7 +21,11 @@ $(function () {
         defaultEnd = new Date(2014, 1, 17),
         _symptoms = [],
         _queryLimit = 50,
-        _selectedDateRange;
+        _selectedDateRange,
+        allData = [],
+        data = [],
+        series = [],
+        seriesMap = {};
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -166,31 +170,18 @@ $(function () {
         var dataStart = dates.values.min,
             dataEnd   = dates.values.max;
         _selectedDateRange = dates;
-        loadHealthMapData(dataStart, dataEnd, _queryLimit, function (data) {
+        loadHealthMapData(dataStart, dataEnd, _queryLimit, function (argData) {
             var defaultFill = 0.9,
                 unselectFill = 1e-6,
                 cscale = colorbrewer.YlGnBu[3],
                 midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
-                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true),
-                series = [],
-                seriesMap = {};
+                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
             
-            $('#itemNumber').text(data.length.toString() + " records loaded");
-
-            function intersectSymptoms(d) {
-                var found = false;
-                if (!_symptoms.length) {
-                    return true;
-                }
-                _symptoms.forEach(function (symptom) {
-                    d.symptoms.forEach(function (s) {
-                        if (s.toLowerCase() === symptom) {
-                            found = true;
-                        }
-                    });
-                });
-                return found;
-            }
+            allData = argData;
+            $('#itemNumber').text(allData.length.toString() + " records loaded");
+            filterBySymptoms();
+            function intersectSymptoms() { return true; }
+            
             map.geojsMap('group', 'points', {
                 lat: function (d) { return d.meta.latitude; },
                 lng: function (d) { return d.meta.longitude; },
@@ -234,48 +225,79 @@ $(function () {
                     }
                 }
             }).trigger('draw');
-            // Update spacemap
-            updateData(data);
-
-            // Update timeline
-
-            // Bin the data by hour
-            data.forEach(function (d) {
-                var hour = new Date(d.meta.date);
-                hour.setMinutes(0);
-                hour.setSeconds(0);
-                hour.setMilliseconds(0);
-                if (!seriesMap[hour]) {
-                    seriesMap[hour] = {date: hour, count: 0};
-                    series.push(seriesMap[hour]);
-                }
-                seriesMap[hour].count += 1;
-            });
-            series.sort(function (a, b) { return d3.ascending(a.date, b.date); });
-            $('#lower-left').empty();
-            $('#lower-left').timeline({
-                data: series,
-                date: {field: "date"},
-                y: [{field: "count"}]
-            });
-
+            updateOthers();
         });
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
+
+    function updateOthers() {
+        series = [];
+        seriesMap = {};
+        // Update spacemap
+        updateData(data);
+
+        // Update timeline
+
+        // Bin the data by hour
+        data.forEach(function (d) {
+            var hour = new Date(d.meta.date);
+            hour.setMinutes(0);
+            hour.setSeconds(0);
+            hour.setMilliseconds(0);
+            if (!seriesMap[hour]) {
+                seriesMap[hour] = {date: hour, count: 0};
+                series.push(seriesMap[hour]);
+            }
+            seriesMap[hour].count += 1;
+        });
+        series.sort(function (a, b) { return d3.ascending(a.date, b.date); });
+        $('#lower-left').empty();
+        $('#lower-left').timeline({
+            data: series,
+            date: {field: "date"},
+            y: [{field: "count"}]
+        });
+    }
+    
+    function filterBySymptoms() {
+        function intersectSymptoms(d) {
+            var found = false;
+            if (!_symptoms.length) {
+                return true;
+            }
+            _symptoms.forEach(function (symptom) {
+                d.symptoms.forEach(function (s) {
+                    if (s.toLowerCase() === symptom) {
+                        found = true;
+                    }
+                });
+            });
+            return found;
+        }
+        
+        data = [];
+        allData.forEach(function (d) {
+            if (intersectSymptoms(d)) { data.push(d); }
+        });
+    }
 
     map.on('symptoms', function (e) {
         _symptoms = [];
         $.each(e.symptoms, function (i, v) {
             _symptoms.push(v.toLowerCase());
         });
+        filterBySymptoms();
         map.geojsMap('group', 'points', {
+            data: data,
             transition: {
                 duration: 1000
             }
         }).trigger('draw');
+        updateOthers();
     });
 
     $('#dataLimit').change(function (evt) {
         _queryLimit = parseInt($(this).val(), 10);
+        console.log(_queryLimit);
         $('#dateRangeSlider').trigger('valuesChanged', _selectedDateRange);
     }).val(_queryLimit.toString());
 
