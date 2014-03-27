@@ -77,84 +77,100 @@ $(function () {
             content: msg.join('<br>\n')
         });
     }
-
-    // add a new feature group, add some data, and trigger a draw
-    var dataStart = new Date(2014, 2, 1),
-        dataEnd   = new Date(2014, 2, 3);
-    loadHealthMapData(dataStart, dataEnd, 1000, function (data) {
-        var symptoms = [],
-            defaultFill = 1.0,
-            unselectFill = 1e-6,
-            cscale = colorbrewer.Reds[3],
-            midDate = new Date((dataStart.valueOf() + dataEnd.valueOf())/2),
-            color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
-
-        function intersectSymptoms(d) {
-            var found = false;
-            if (!symptoms.length) {
-                return true;
-            }
-            symptoms.forEach(function (symptom) {
-                d.symptoms.forEach(function (s) {
-                    if (s.toLowerCase() === symptom) {
-                        found = true;
-                    }
-                });
-            });
-            return found;
+    
+    var defaultStart = new Date(2014, 1, 15),
+        defaultEnd = new Date(2014, 1, 17);
+    // create date range slider
+    $('#dateRangeSlider').dateRangeSlider({
+        range: true,
+        bounds: {
+            min: new Date(2014, 0, 1),
+            max: new Date(2014, 2, 25)
+        },
+        defaultValues: {
+            min: defaultStart,
+            max: defaultEnd
         }
-        map.geojsMap('group', 'points', {
-            lat: function (d) { return d.meta.latitude; },
-            lng: function (d) { return d.meta.longitude; },
-            r: function (d) {
-                if (intersectSymptoms(d)) {
-                    return (d.meta.rating * 3).toString() + 'pt';
+    }).on('valuesChanged', function (e, dates) {
+        // add a new feature group, add some data, and trigger a draw
+        var dataStart = dates.values.min,
+            dataEnd   = dates.values.max;
+        loadHealthMapData(dataStart, dataEnd, 1000, function (data) {
+            var symptoms = [],
+                defaultFill = 1.0,
+                unselectFill = 1e-6,
+                cscale = colorbrewer.Reds[3],
+                midDate = new Date((dataStart.valueOf() + dataEnd.valueOf())/2),
+                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
+
+            function intersectSymptoms(d) {
+                var found = false;
+                if (!symptoms.length) {
+                    return true;
                 }
-                return '0pt';
-            },
-            data: data,
-            dataIndexer: function (d) { return d._id; },
-            style: {
-                fill: function (d) { 
-                    return color(d.meta.date);
-                },
-                'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
-                'stroke': 'black',
-                'stroke-width': '0.5pt'
-            },
-            handlers: {
-                'click': function (d) {
-                    console.log(d);
-                },
-                'mouseover': function () {
-                    $(this).popover('show');
-                },
-                'mouseout': function () {
-                    $(this).popover('hide');
-                }
-            },
-            enter: {
-                each: function (d) {
-                    var link = d3.select(this.parentNode).append('svg:a')
-                        .attr('xlink:href', d.meta.link)
-                        .attr('target', 'healthMapInfo');
-                    $(link.node()).prepend(this);
-                    makePopOver(this, d);
-                }
+                symptoms.forEach(function (symptom) {
+                    d.symptoms.forEach(function (s) {
+                        if (s.toLowerCase() === symptom) {
+                            found = true;
+                        }
+                    });
+                });
+                return found;
             }
-        }).trigger('draw');
-        map.on('symptoms', function (e) {
-            symptoms = [];
-            $.each(e.symptoms, function (i, v) {
-                symptoms.push(v.toLowerCase());
-            });
             map.geojsMap('group', 'points', {
-                transition: {
-                    duration: 1000
+                lat: function (d) { return d.meta.latitude; },
+                lng: function (d) { return d.meta.longitude; },
+                r: function (d) {
+                    if (intersectSymptoms(d)) {
+                        return (d.meta.rating * 3).toString() + 'pt';
+                    }
+                    return '0pt';
+                },
+                data: data,
+                dataIndexer: function (d) { return d._id; },
+                style: {
+                    fill: function (d) { 
+                        return color(d.meta.date);
+                    },
+                    'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
+                    'stroke': 'black',
+                    'stroke-width': '0.5pt'
+                },
+                handlers: {
+                    'click': function (d) {
+                        console.log(d);
+                    },
+                    'mouseover': function () {
+                        $(this).popover('show');
+                    },
+                    'mouseout': function () {
+                        $(this).popover('hide');
+                    }
+                },
+                enter: {
+                    each: function (d) {
+                        var link = d3.select(this.parentNode).append('svg:a')
+                            .attr('xlink:href', d.meta.link)
+                            .attr('target', 'healthMapInfo');
+                        $(link.node()).prepend(this);
+                        makePopOver(this, d);
+                    }
                 }
             }).trigger('draw');
+            map.on('symptoms', function (e) {
+                symptoms = [];
+                $.each(e.symptoms, function (i, v) {
+                    symptoms.push(v.toLowerCase());
+                });
+                map.geojsMap('group', 'points', {
+                    transition: {
+                        duration: 1000
+                    }
+                }).trigger('draw');
+            });
         });
-    });
+    }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
+
 
     // ***** DENDROGRAM in lower right *****
     (function () {

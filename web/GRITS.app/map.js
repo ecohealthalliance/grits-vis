@@ -125,7 +125,7 @@
             });
 
             // create the selection
-            var pts = svg.selectAll('.dataPoints').data(opts.data);
+            var pts = svg.selectAll('.dataPoints').data(opts.data, opts.dataIndexer);
             
             // apply main style/transition
             applyStyle(applyTransition(pts, opts.transition), opts);

@@ -2,7 +2,7 @@
 <meta charset=utf-8>
 
 <title>Application Template</title>
-
+<link href='lib/classic-min.css' rel=stylesheet>
 <script src=http://code.jquery.com/jquery-1.8.2.min.js></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 <script src=http://d3js.org/d3.v3.min.js charset=utf-8></script>
@@ -11,6 +11,7 @@
 <script src="lib/vgl.min.js"></script>
 <script src="lib/geojs.min.js"></script>
 <script src=/js/tangelo.min.js></script>
+<script src=lib/jQDateRangeSlider-min.js></script>
 <script src=lib/colorbrewer.js></script>
 <script src=hmapData.js></script>
 <script src=map.js></script>
@@ -90,5 +91,12 @@
 </div>
 
 <div id=control-panel>
-    <input id=symptoms placeholder="Comma separated symptoms"></input>
+    <div class=container>
+        <div class=row>
+            <div class=col-md-1></div><div class=col-md-10 id="dateRangeSlider"></div>
+        </div>
+        <div class=row>
+            <div class=col-md-3></div><input class=col-md-6 id=symptoms placeholder="Comma separated symptoms"></input>
+        </div>
+    </div>
 </div>
