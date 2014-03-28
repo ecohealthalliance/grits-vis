@@ -17,10 +17,10 @@ $(function () {
             "map"
         ],
         currentData  = [],
-        defaultStart = new Date(2014, 1, 15),
-        defaultEnd = new Date(2014, 1, 17),
+        defaultStart = new Date(2014, 0, 1),
+        defaultEnd = new Date(2014, 2, 17),
         _symptoms = [],
-        _queryLimit = 50,
+        _queryLimit = 250,
         _selectedDateRange,
         allData = [],
         data = [],
@@ -225,8 +225,8 @@ $(function () {
     $('#dateRangeSlider').dateRangeSlider({
         range: true,
         bounds: {
-            min: new Date(2014, 0, 1),
-            max: new Date(2014, 2, 25)
+            min: new Date(2012, 3, 1),
+            max: new Date(2014, 2, 17)
         },
         defaultValues: {
             min: defaultStart,
