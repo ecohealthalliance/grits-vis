@@ -262,13 +262,19 @@ $(function () {
                 },
                 enter: {
                     each: function (d) {
-                   /*     var link = d3.select(this.parentNode).append('svg:a')
+                        var link = d3.select(this.parentNode).append('svg:a')
                             .attr('xlink:href', d.meta.link)
                             .attr('target', 'healthMapInfo');
-                        $(link.node()).prepend(this); */
+                        $(link.node()).prepend(this);
                         makePopOver(this, d);
                     }
+                },
+                exit: {
+                    each: function (d) {
+                        $(this).parent().remove();
+                    }
                 }
+
             }).trigger('draw');
             updateOthers();
         });
