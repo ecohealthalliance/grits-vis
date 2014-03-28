@@ -190,10 +190,12 @@
             
             // resize handler
             function resize() {
+                var oldTransition = m_node.data('transition');
                 map.resize(0, 0, m_node.width(), m_node.height());
-
+                m_node.data('transition', null);
                 // georeferencing needs to be recomputed on resize
                 m_node.trigger('draw', { flushCache: true });
+                m_node.data('transition', oldTransition);
             }
 
             // set up data handlers
