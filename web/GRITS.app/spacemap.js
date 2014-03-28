@@ -62,7 +62,7 @@
             };
             // this.map = new tangelo.GoogleMapSVG(this.element.get(0), mapOptions, mapConfig);
             // this.map.on(["draw", "drag", "zoom_changed"], mapConfig.draw);
-            this.svg = d3.select(this.element.get(0)).append("svg");
+            this.svg = d3.select(this.element.get(0)).append("svg").style("width", "100%").style("height", "100%");
             this.linkLayer = this.svg.append("g");
             this.nodeLayer = this.svg.append("g");
             this.nodeLabelLayer = this.svg.append("g");
