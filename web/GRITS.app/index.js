@@ -216,6 +216,15 @@ $(function () {
             dataEnd   = _selectedDateRange.values.max,
             disease = $("#disease").val();
         loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData) {
+            
+            if (argData === 'login') {
+                $("#login-panel").modal('show');
+                return;
+            } else if (argData === 'group') {
+                $("#group-panel").modal('show');
+                return;
+            }
+
             var defaultFill = 0.9,
                 unselectFill = 1e-6,
                 cscale = colorbrewer.YlGnBu[3],

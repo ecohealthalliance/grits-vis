@@ -4,6 +4,7 @@
     "use strict";
 
     var _histData = null;
+    var _logInOkay = null;
     function loadHistData() {
         if (_histData) {
             return;
@@ -56,65 +57,90 @@
     }
 
     window.loadHealthMapData = function (startDate, endDate, disease, limit, callBack) {
-        var query = {
-            'meta.date': {
-                '$gte': {
-                    '$date': startDate.valueOf()
-                },
-                '$lt': {
-                    '$date': endDate.valueOf()
-                }
-            }
-        };
-        if (disease !== 'All') {
-            query['meta.disease'] = disease;
-        }
-        $.ajax({
-            url: '/girder/api/v1/resource/mongo_search',
-            dataType: 'json',
-            data: {
-                type: 'item',
-                q: JSON.stringify(query),
-                limit: limit
-            },
-            success: function (response) {
-                var itemRequests = [],
-                    data = [];
-                if (!_histData) {
-                    itemRequests.push(loadHistData());
-                }
-                response.forEach(function (item) {
-                    itemRequests.push(
-                        $.ajax({
-                            url: '/girder/api/v1/item/' + item._id,
-                            dataType: 'json',
-                            success: function (response) {
-                                data.push(response);
-                            }
-                        })
-                    );
-                });
-                $.when.apply($, itemRequests).then(
-                    function () {      // success
-                        data.forEach(function (d) {
-                            var dateTime = d.meta.date.split(' '),
-                                date = dateTime[0].split('-'),
-                                time = dateTime[1].split(':');
-                            dateTime = new Date(date[0], date[1] - 1, date[2]);
-                            dateTime.setHours(time[0]);
-                            dateTime.setMinutes(time[1]);
-                            dateTime.setSeconds(time[2]);
-                            d.meta.date = dateTime;
-                            d.symptoms = generateSymptoms();
-                        });
-                        callBack(data);
+        function fetchData() {
+            var query = {
+                'meta.date': {
+                    '$gte': {
+                        '$date': startDate.valueOf()
                     },
-                    function () {      // fail
-                        alert('Girder data failed to load');
+                    '$lt': {
+                        '$date': endDate.valueOf()
                     }
-                );
+                }
+            };
+            if (disease !== 'All') {
+                query['meta.disease'] = disease;
             }
-        });
+            $.ajax({
+                url: '/girder/api/v1/resource/mongo_search',
+                dataType: 'json',
+                data: {
+                    type: 'item',
+                    q: JSON.stringify(query),
+                    limit: limit
+                },
+                success: function (response) {
+                    var itemRequests = [],
+                        data = [];
+                    if (!_histData) {
+                        itemRequests.push(loadHistData());
+                    }
+                    response.forEach(function (item) {
+                        itemRequests.push(
+                            $.ajax({
+                                url: '/girder/api/v1/item/' + item._id,
+                                dataType: 'json',
+                                success: function (response) {
+                                    data.push(response);
+                                }
+                            })
+                        );
+                    });
+                    $.when.apply($, itemRequests).then(
+                        function () {      // success
+                            data.forEach(function (d) {
+                                var dateTime = d.meta.date.split(' '),
+                                    date = dateTime[0].split('-'),
+                                    time = dateTime[1].split(':');
+                                dateTime = new Date(date[0], date[1] - 1, date[2]);
+                                dateTime.setHours(time[0]);
+                                dateTime.setMinutes(time[1]);
+                                dateTime.setSeconds(time[2]);
+                                d.meta.date = dateTime;
+                                d.symptoms = generateSymptoms();
+                            });
+                            callBack(data);
+                        },
+                        function () {      // fail
+                            alert('Girder data failed to load');
+                        }
+                    );
+                }
+            });
+        }
+
+        if (_logInOkay) { // maybe check log in every time?
+            fetchData();
+        } else {
+            $.ajax({
+                url: '/girder/api/v1/user/me',
+                dataType: 'json',
+                success: function (response) {
+                    if (response) {
+                        if (response.groups && response.groups.length > 0) { // should test if it is the correct group, but... later
+                            _logInOkay = true;
+                            fetchData();
+                        } else {
+                            _logInOkay = false;
+                            callBack("group");
+                        }
+                    } else {
+                        _logInOkay = false;
+                        callBack("login");
+                    }
+                }
+            });
+        }
     };
 
 }(window.$));
