@@ -306,7 +306,7 @@ $(function () {
     $("#distance-slider").slider({
         min: 0,
         max: 100,
-        value: 20,
+        value: 50,
         step: 1,
         change: function (evt, ui) {
             spacemap.option("linkDistance", ui.value);

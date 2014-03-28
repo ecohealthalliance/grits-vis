@@ -63,6 +63,9 @@
             // this.map = new tangelo.GoogleMapSVG(this.element.get(0), mapOptions, mapConfig);
             // this.map.on(["draw", "drag", "zoom_changed"], mapConfig.draw);
             this.svg = d3.select(this.element.get(0)).append("svg");
+            this.linkLayer = this.svg.append("g");
+            this.nodeLayer = this.svg.append("g");
+            this.nodeLabelLayer = this.svg.append("g");
 
             options = $.extend(true, {}, this.options);
             options.data = this.options.data;
@@ -84,8 +87,10 @@
                 dataNodes = [],
                 colorScale,
                 nodeEnter,
+                nodeLabelEnter,
                 oldNodes = this.nodes,
-                i;
+                i,
+                fontSize;
 
             if (!this.svg) {
                 return;
@@ -96,7 +101,7 @@
             this.mapOpacity = 0;
 
             this.options.data.forEach(function (d) {
-                var node = {data: d};
+                var node = {data: d, degree: 0};
                 that.nodes.push(node);
                 dataNodes.push(node);
             });
@@ -174,14 +179,18 @@
                         }
                         if (constraint.type === "link") {
                             if (!constraint.nodeMap[value]) {
-                                constraint.nodeMap[value] = {data: node.data, value: value, constraint: constraint};
+                                constraint.nodeMap[value] = {data: node.data, value: value, constraint: constraint, degree: 0};
                                 that.nodes.push(constraint.nodeMap[value]);
                             }
                             that.links.push({source: node, target: constraint.nodeMap[value]});
+                            node.degree += 1;
+                            constraint.nodeMap[value].degree += 1;
                         } else {
-                            constraintNode = {data: node.data, value: value, constraint: constraint};
+                            constraintNode = {data: node.data, value: value, constraint: constraint, degree: 0};
                             that.nodes.push(constraintNode);
                             that.links.push({source: node, target: constraintNode});
+                            node.degree += 1;
+                            constraintNode.degree += 1;
                         }
                     }
                 });
@@ -194,6 +203,8 @@
                     this.nodes[i].y = oldNodes[i].y;
                 }
             }
+
+            fontSize = d3.scale.linear().domain(d3.extent(this.nodes, function (d) { return d.degree; })).range([8, 32]);
 
             this.force
                 .linkDistance(this.options.linkDistance)
@@ -209,10 +220,11 @@
                 .links(this.links)
                 .start();
 
-            this.svg.selectAll(".link").remove();
-            this.svg.selectAll(".node").remove();
+            // this.nodeLayer.selectAll().remove();
+            // this.linkLayer.selectAll().remove();
+            // this.nodeLabelLayer.selectAll().remove();
 
-            this.link = this.svg.selectAll(".link")
+            this.link = this.linkLayer.selectAll(".link")
                 .data(this.links);
 
             this.link.enter()
@@ -222,7 +234,9 @@
                 .style("stroke", "#999")
                 .style("stroke-width", 1);
 
-            this.node = this.svg.selectAll(".node")
+            this.link.exit().remove();
+
+            this.node = this.nodeLayer.selectAll(".node")
                 .data(this.nodes);
 
             nodeEnter = this.node.enter()
@@ -232,7 +246,18 @@
             nodeEnter.append("circle")
                 .style("stroke", "#fff")
                 .style("stroke-width", 0.5);
-            nodeEnter.append("text")
+
+            this.node.exit().remove();
+
+            this.nodeLabel = this.nodeLabelLayer.selectAll(".node-label")
+                .data(this.nodes);
+
+            nodeLabelEnter = this.nodeLabel.enter()
+                .append("g")
+                .classed("node-label", true);
+            nodeLabelEnter.append("text")
+                .style("text-anchor", "middle")
+                .attr("dy", ".3em")
                 .text(function (d) {
                     if (d.constraint) {
                         if (d.constraint.type === "link" ||
@@ -245,10 +270,21 @@
                     return that.options.label(d);
                 });
 
+            this.nodeLabel.exit().remove();
+
             colorScale = d3.scale.category10();
 
             this.node
                 .style("opacity", function (d) { return d.constraint ? d.constraint.strength : 1; });
+
+            this.link
+                .style("opacity", function (d) { return d.target.constraint ? d.target.constraint.strength : 1; });
+
+            this.nodeLabel
+                .style("opacity", function (d) { return d.constraint ? d.constraint.strength : 1; });
+
+            this.nodeLabel.selectAll("text")
+                .style("font-size", function (d) { return d.constraint ? d.constraint.strength * fontSize(d.degree) : fontSize(d.degree); });
 
             this.node.selectAll("circle")
                 .attr("r", function (d) { return d.constraint ? 4 : 6; })
@@ -277,6 +313,7 @@
                 .attr("y2", function (d) { return d.target.y; });
 
             that.node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+            that.nodeLabel.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
         }
     });
 }(window.tangelo, window.jQuery, window.d3, window.google));
