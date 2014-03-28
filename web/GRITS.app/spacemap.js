@@ -89,6 +89,7 @@
                 nodeEnter,
                 nodeLabelEnter,
                 oldNodes = this.nodes,
+                sortedNodes,
                 i,
                 fontSize;
 
@@ -206,6 +207,14 @@
 
             fontSize = d3.scale.linear().domain(d3.extent(this.nodes, function (d) { return d.degree; })).range([8, 32]);
 
+            colorScale = d3.scale.category10();
+            this.nodes.forEach(function (d) {
+                colorScale(d.constraint ? d.constraint.index : -1);
+            });
+
+            sortedNodes = this.nodes.slice();
+            sortedNodes.sort(function (a, b) { return d3.ascending(a.degree, b.degree); });
+
             this.force
                 .linkDistance(this.options.linkDistance)
                 .linkStrength(function (link) {
@@ -235,7 +244,7 @@
                 .style("stroke-width", 1);
 
             this.node = this.nodeLayer.selectAll(".node")
-                .data(this.nodes);
+                .data(sortedNodes);
 
             nodeEnter = this.node.enter()
                 .append("g")
@@ -246,13 +255,16 @@
                 .style("stroke-width", 0.5);
 
             this.nodeLabel = this.nodeLabelLayer.selectAll(".node-label")
-                .data(this.nodes);
+                .data(sortedNodes);
 
             nodeLabelEnter = this.nodeLabel.enter()
                 .append("g")
                 .classed("node-label", true);
             nodeLabelEnter.append("text")
                 .style("text-anchor", "middle")
+                .style("stroke", "white")
+                .style("stroke-width", 1)
+                .style("stroke-opacity", 0.5)
                 .attr("dy", ".3em")
                 .text(function (d) {
                     if (d.constraint) {
@@ -265,8 +277,6 @@
                     }
                     return that.options.label(d);
                 });
-
-            colorScale = d3.scale.category10();
 
             this.node
                 .style("opacity", function (d) { return d.constraint ? d.constraint.strength : 1; });

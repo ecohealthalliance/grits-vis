@@ -1,6 +1,8 @@
-/*jslint browser: true*/
+/*jslint browser: true, nomen: true */
 /*global alert*/
 (function ($) {
+    "use strict";
+
     var _histData = null;
     function loadHistData() {
         if (_histData) {
@@ -21,8 +23,8 @@
     // generate a random list of symptoms from a probability distribution
     function generateSymptoms() {
         function rSelect(h) {
-            var cdf = h.cdf, val = h.value;
-            var i = Math.random(), minVal = 2, minIdx = -1;
+            var cdf = h.cdf, val = h.value,
+                i = Math.random(), minVal = 2, minIdx = -1;
             cdf.forEach(function (v, k) {
                 if (i <= v && v < minVal) {
                     minVal = v;
@@ -31,7 +33,7 @@
             });
             return val[minIdx];
         }
-            
+
         var N = rSelect(_histData.nSymptoms), symptoms = [], i, repeat, s;
         function inList(d) {
             var v = false;
@@ -42,9 +44,9 @@
             });
             return v;
         }
-        for ( i = 0; i < N; i++ ) {
+        for (i = 0; i < N; i += 1) {
             repeat = true;
-            while(repeat) {
+            while (repeat) {
                 s = rSelect(_histData.symptoms);
                 repeat = inList(s);
             }
@@ -53,27 +55,31 @@
         return symptoms;
     }
 
-    window.loadHealthMapData = function (startDate, endDate, limit, callBack) {
+    window.loadHealthMapData = function (startDate, endDate, disease, limit, callBack) {
+        var query = {
+            'meta.date': {
+                '$gte': {
+                    '$date': startDate.valueOf()
+                },
+                '$lt': {
+                    '$date': endDate.valueOf()
+                }
+            }
+        };
+        if (disease !== 'All') {
+            query['meta.disease'] = disease;
+        }
         $.ajax({
             url: '/girder/api/v1/resource/mongo_search',
             dataType: 'json',
             data: {
                 type: 'item',
-                q: JSON.stringify({
-                    'meta.date': {
-                        '$gte': {
-                            '$date': startDate.valueOf()
-                        },
-                        '$lt': {
-                            '$date': endDate.valueOf()
-                        }
-                    }
-                }),
+                q: JSON.stringify(query),
                 limit: limit
             },
             success: function (response) {
                 var itemRequests = [],
-                     data = [];
+                    data = [];
                 if (!_histData) {
                     itemRequests.push(loadHistData());
                 }
@@ -102,10 +108,11 @@
                             d.symptoms = generateSymptoms();
                         });
                         callBack(data);
-                },
+                    },
                     function () {      // fail
                         alert('Girder data failed to load');
-                });
+                    }
+                );
             }
         });
     };

@@ -101,7 +101,7 @@
     </div>
 </div>
 
-<div id=control-panel>
+<div id="control-panel">
     <div class=container>
         <div class=row>
             <label class="col-sm-12 control-label ui-label" id="itemNumber" style='height: 30px'></label>
@@ -120,8 +120,24 @@
                 </select>
             </div>
         </div>
-        <div class=row>
-            <div class=col-sm-3></div><input class=col-sm-6 id=symptoms placeholder="Comma separated symptoms"></input>
+        <div class="form-horizontal" style="margin-bottom: 20px">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Symptoms</label>
+                <div class="col-sm-4">
+                    <input class="form-control" id="symptoms" placeholder="Comma separated symptoms"></input>
+                </div>
+                <label class="col-sm-2 control-label ui-label">Disease</label>
+                <div class="col-sm-4">
+                    <select class="form-control" id="disease">
+                        <option>All</option>
+                        <option>Avian Influenza H7N9</option>
+                        <option>Dengue</option>
+                        <option>Norovirus</option>
+                        <option>Rabies</option>
+                        <option>Swine Flu H1N1</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="row form-inline">
         </div>

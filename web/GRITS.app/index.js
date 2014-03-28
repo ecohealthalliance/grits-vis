@@ -154,43 +154,31 @@ $(function () {
 
     }
 
-    // create date range slider
-    $('#dateRangeSlider').dateRangeSlider({
-        range: true,
-        bounds: {
-            min: new Date(2014, 0, 1),
-            max: new Date(2014, 2, 25)
-        },
-        defaultValues: {
-            min: defaultStart,
-            max: defaultEnd
-        }
-    }).on('valuesChanged', function (e, dates) {
-        // add a new feature group, add some data, and trigger a draw
-        var dataStart = dates.values.min,
-            dataEnd   = dates.values.max;
-        _selectedDateRange = dates;
-        loadHealthMapData(dataStart, dataEnd, _queryLimit, function (argData) {
+    function updateEverything() {
+        var dataStart = _selectedDateRange.values.min,
+            dataEnd   = _selectedDateRange.values.max,
+            disease = $("#disease").val();
+        loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData) {
             var defaultFill = 0.9,
                 unselectFill = 1e-6,
                 cscale = colorbrewer.YlGnBu[3],
                 midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
                 color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
-            
+
             allData = argData;
             $('#itemNumber').text(allData.length.toString() + " records loaded");
             filterBySymptoms();
             function intersectSymptoms() { return true; }
-            
+
             map.geojsMap('group', 'points', {
                 lat: function (d) { return d.meta.latitude; },
                 lng: function (d) { return d.meta.longitude; },
                 r: function (d) {
-                        return '5pt';
+                    return '5pt';
                 },
                 data: data,
-                dataIndexer: function (d) { 
-                    return d._id; 
+                dataIndexer: function (d) {
+                    return d._id;
                 },
                 style: {
                     fill: function (d) {
@@ -227,6 +215,27 @@ $(function () {
             }).trigger('draw');
             updateOthers();
         });
+    }
+
+    d3.select("#disease").on("change", function () {
+        updateEverything();
+    });
+
+    // create date range slider
+    $('#dateRangeSlider').dateRangeSlider({
+        range: true,
+        bounds: {
+            min: new Date(2014, 0, 1),
+            max: new Date(2014, 2, 25)
+        },
+        defaultValues: {
+            min: defaultStart,
+            max: defaultEnd
+        }
+    }).on('valuesChanged', function (e, dates) {
+        // add a new feature group, add some data, and trigger a draw
+        _selectedDateRange = dates;
+        updateEverything();
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
 
     function updateOthers() {
@@ -257,7 +266,7 @@ $(function () {
             y: [{field: "count"}]
         });
     }
-    
+
     function filterBySymptoms() {
         function intersectSymptoms(d) {
             var found = false;
@@ -273,7 +282,7 @@ $(function () {
             });
             return found;
         }
-        
+
         data = [];
         allData.forEach(function (d) {
             if (intersectSymptoms(d)) { data.push(d); }
@@ -346,15 +355,15 @@ $(function () {
         var field = $("#field-select").val(),
             row = $('<div class="form-group"></div>'),
             label = $('<label class="col-sm-2 control-label">' + field + '</label>'),
-            sliderCol = $('<div class="col-sm-7"></div>'),
+            sliderCol = $('<div class="col-sm-8" style="margin-top:15px"></div>'),
             slider = $('<div></div>'),
-            typeCol = $('<div class="col-sm-3"></div>'),
+            typeCol = $('<div class="col-sm-3 hidden"></div>'),
             type = $('<select class="form-control"></select>'),
             constraint = {
                 name: field,
                 accessor: tangelo.accessor({field: field}),
                 type: "link",
-                strength: 0.5
+                strength: 1.0
             };
 
         d3.select(type.get(0)).selectAll("option")
@@ -377,7 +386,7 @@ $(function () {
         slider.slider({
             min: 0,
             max: 1,
-            value: 0.5,
+            value: 1.0,
             step: 0.01,
             change: function (evt, ui) {
                 constraint.strength = ui.value;
