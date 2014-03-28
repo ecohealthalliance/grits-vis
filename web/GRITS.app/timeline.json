@@ -38,14 +38,14 @@
       },
       "marks": [
         {
-          "type": "line",
+          "type": "rect",
           "properties": {
             "enter": {
-              "x": {"scale": "x", "field": "data.date"},
+              "x": {"scale": "x", "field": "data.date", "offset": -2},
               "y": {"scale": "y", "field": "data.y"},
-              "stroke": {"scale": "color", "field": "data.group"},
-              "strokeWidth": {"value": 1},
-              "strokeOpacity": {"value": 1},
+              "width": {"value": 5},
+              "y2": {"scale": "y", "value": 0},
+              "fill": {"scale": "color", "field": "data.group"},
               "interpolate": {"value": "basis"}
             }
           }
