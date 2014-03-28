@@ -32,9 +32,15 @@
                 });
             });
         });
-        console.log(dt);
-        vg.parse.spec("timeline.json", function(chart) {
-            chart(opt)
+
+        function resize() {
+            vg.parse.spec("timeline.json", function(chart) {
+                chart(opt).width($(that).width() - 70).height($(that).height() - 70).update();
+            });
+        }
+        $(window).resize(resize);
+        resize();
+
                 // .on("mouseover", function (event, d) {
                 //     // if (on.mouseover) {
                 //     //     on.mouseover(d);
@@ -50,14 +56,7 @@
                 //     //     on.click(d);
                 //     // }
                 // })
-                .update();
-        });
 
-        function update() {
-            return that;
-        }
-
-        that.update = update;
         return that;
     };
 

@@ -1,7 +1,5 @@
 {
-  "width": 600,
-  "height": 400,
-  "padding": {"top": 10, "left": 100, "bottom": 40, "right": 40},
+  "padding": {"top": 20, "left": 50, "bottom": 50, "right": 20},
   "data": [
     {
       "name": "table"
