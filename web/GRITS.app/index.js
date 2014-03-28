@@ -488,7 +488,7 @@ $(function () {
                 followPath(data, symptoms);
             }
 
-            $("#lower-right").dendrogram({
+            $("#lower-right").dendrogramLocal({
                 data: data,
                 orientation: "vertical",
                 id: {field: "id"},
@@ -517,7 +517,7 @@ $(function () {
                     $(this).popover({
                         animation: true,
                         html: true,
-                        placement: $("#tree").dendrogram("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
+                        placement: $("#tree").dendrogramLocal("option", "orientation") === "horizontal" ? "auto right" : "auto bottom",
                         trigger: "manual",
                         content: html,
                         container: "body"
@@ -537,7 +537,7 @@ $(function () {
                 }
             });
 
-            $("#lower-right").dendrogram("on", "click.collapse", function (d, i, elt) {
+            $("#lower-right").dendrogramLocal("on", "click.collapse", function (d, i, elt) {
                 if (d3.event.shiftKey) {
                     this.action("collapse").call(elt, d, i);
                 }
@@ -549,9 +549,9 @@ $(function () {
                     symptoms[v.toLowerCase()] = true;
                 });
 
-                restoreDefaultColor($(this).dendrogram("option", "data"));
-                followPath($(this).dendrogram("option", "data"), symptoms);
-                $(this).dendrogram("refresh");
+                restoreDefaultColor($(this).dendrogramLocal("option", "data"));
+                followPath($(this).dendrogramLocal("option", "data"), symptoms);
+                $(this).dendrogramLocal("refresh");
             });
         });
     }());
