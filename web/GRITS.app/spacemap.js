@@ -205,7 +205,7 @@
                 }
             }
 
-            fontSize = d3.scale.linear().domain(d3.extent(this.nodes, function (d) { return d.degree; })).range([8, 32]);
+            fontSize = d3.scale.linear().domain(d3.extent(this.nodes, function (d) { return d.constraint && d.constraint.strength === 0 ? 0 : d.degree; })).range([8, 32]);
 
             colorScale = d3.scale.category10();
             this.nodes.forEach(function (d) {
@@ -294,6 +294,7 @@
 
             this.node.selectAll("circle")
                 .attr("r", function (d) { return d.constraint ? 4 : 6; })
+                .style("stroke", "black")
                 .style("fill", function (d) { return colorScale(d.constraint ? d.constraint.index : -1); });
 
             this.force.on("tick", function () { that._tick.call(that); });
