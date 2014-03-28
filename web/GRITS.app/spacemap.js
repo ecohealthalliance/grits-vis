@@ -262,9 +262,11 @@
                 .classed("node-label", true);
             nodeLabelEnter.append("text")
                 .style("text-anchor", "middle")
+                .style("font-weight", "bold")
                 .style("stroke", "white")
                 .style("stroke-width", 1)
                 .style("stroke-opacity", 0.5)
+                .style("fill", function (d) { return d3.rgb(colorScale(d.constraint ? d.constraint.index : -1)).darker(2); })
                 .attr("dy", ".3em")
                 .text(function (d) {
                     if (d.constraint) {
