@@ -22,6 +22,7 @@ $(function () {
         _symptoms = [],
         _queryLimit = 250,
         _selectedDateRange,
+        spacemapInitialized = false,
         allData = [],
         data = [],
         series = [],
@@ -101,6 +102,55 @@ $(function () {
         });
     }
 
+    function addConstraint(field, value) {
+        // var row = $('<div class="form-group"></div>'),
+        var row = $('<div></div>'),
+            label = $('<label class="col-sm-2 control-label">' + field + '</label>'),
+            sliderCol = $('<div class="col-sm-2" style="margin-top:15px"></div>'),
+            slider = $('<div></div>'),
+            typeCol = $('<div class="col-sm-3 hidden"></div>'),
+            type = $('<select class="form-control"></select>'),
+            constraint = {
+                name: field,
+                accessor: tangelo.accessor({field: field}),
+                type: "link",
+                strength: value
+            };
+
+        d3.select(type.get(0)).selectAll("option")
+            .data(types)
+            .enter().append("option")
+            .attr("value", function (d) { return d; })
+            .text(function (d) { return d; });
+        type.on("change", function () {
+            constraint.type = type.val();
+            spacemap.option("constraints", constraints);
+        });
+
+        constraints.push(constraint);
+        sliderCol.append(slider);
+        typeCol.append(type);
+        row.append(label);
+        row.append(sliderCol);
+        row.append(typeCol);
+        $("#constraints").append(row);
+        slider.slider({
+            min: 0,
+            max: 1,
+            value: value,
+            step: 0.01,
+            change: function (evt, ui) {
+                constraint.strength = ui.value;
+                spacemap.option("constraints", constraints);
+            },
+            slide: function (evt, ui) {
+                constraint.strength = ui.value;
+                spacemap.option("constraints", constraints);
+            }
+        });
+        spacemap.option("constraints", constraints);
+    }
+
     function updateData(data) {
         var fieldMap = {},
             fields = [];
@@ -145,6 +195,13 @@ $(function () {
             data: data,
             constraints: constraints
         }).data("spacemap");
+
+        if (!spacemapInitialized) {
+            spacemapInitialized = true;
+            addConstraint("symptoms", 0);
+            addConstraint("meta.disease", 1);
+            addConstraint("meta.country", 0);
+        }
 
         d3.select("#field-select").selectAll("option")
             .data(fields)
