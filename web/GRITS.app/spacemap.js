@@ -220,9 +220,9 @@
                 .links(this.links)
                 .start();
 
-            // this.nodeLayer.selectAll().remove();
-            // this.linkLayer.selectAll().remove();
-            // this.nodeLabelLayer.selectAll().remove();
+            this.nodeLayer.selectAll("*").remove();
+            this.linkLayer.selectAll("*").remove();
+            this.nodeLabelLayer.selectAll("*").remove();
 
             this.link = this.linkLayer.selectAll(".link")
                 .data(this.links);
@@ -234,8 +234,6 @@
                 .style("stroke", "#999")
                 .style("stroke-width", 1);
 
-            this.link.exit().remove();
-
             this.node = this.nodeLayer.selectAll(".node")
                 .data(this.nodes);
 
@@ -246,8 +244,6 @@
             nodeEnter.append("circle")
                 .style("stroke", "#fff")
                 .style("stroke-width", 0.5);
-
-            this.node.exit().remove();
 
             this.nodeLabel = this.nodeLabelLayer.selectAll(".node-label")
                 .data(this.nodes);
@@ -269,8 +265,6 @@
                     }
                     return that.options.label(d);
                 });
-
-            this.nodeLabel.exit().remove();
 
             colorScale = d3.scale.category10();
 
