@@ -223,6 +223,17 @@
             // attach resize handler
             $(window).resize(resize);
 
+            // ignore right clicks
+            m_node.on("mousedown", function (evt) {
+                if (evt.which !== 1) {
+                    evt.stopPropagation();
+                }
+            }).on("mouseup", function (evt) {
+                if (evt.which !== 1) {
+                    evt.stopPropagation();
+                }
+            });
+
             // connect the layers together
             map.addLayer(osm)
                .addLayer(layer);
