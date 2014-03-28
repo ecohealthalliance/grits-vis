@@ -552,7 +552,7 @@ $(function () {
                 restoreDefaultColor($(this).dendrogramLocal("option", "data"));
                 followPath($(this).dendrogramLocal("option", "data"), symptoms);
                 $(this).dendrogramLocal("refresh");
-            });
+            }).resize($(this).dendrogramLocal("refresh"));
         });
     }());
 });
