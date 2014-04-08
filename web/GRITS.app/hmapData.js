@@ -5,15 +5,16 @@
 
     var _histData = null;
     var _logInOkay = null;
-    function loadHistData() {
+    function loadHistData(callBack) {
         if (_histData) {
-            return;
+            callBack();
         }
         return $.ajax({
             url: 'data/symptomsHist.json',
             dataType: 'json',
             success: function (response) {
                 _histData = response;
+                callBack();
             },
             error: function () {
                 alert('Failed to load symptoms data.');
@@ -58,63 +59,46 @@
 
     window.loadHealthMapData = function (startDate, endDate, disease, limit, callBack) {
         function fetchData() {
-            var query = {
-                'meta.date': {
-                    '$gte': {
-                        '$date': startDate.valueOf()
-                    },
-                    '$lt': {
-                        '$date': endDate.valueOf()
-                    }
-                }
-            };
-            if (disease !== 'All') {
-                query['meta.disease'] = disease;
+            var params = {};
+            if (startDate) {
+                params.start = startDate.toISOString();
             }
+            if (endDate) {
+                params.end = endDate.toISOString();
+            }
+            if (disease !== 'All') {
+                params.disease = disease;
+            }
+            if (limit) {
+                params.limit = limit;
+            }
+            //params.geoJSON = 1;
             $.ajax({
-                url: '/girder/api/v1/resource/mongo_search',
+                url: '/girder/api/v1/resource/grits',
                 dataType: 'json',
-                data: {
-                    type: 'item',
-                    q: JSON.stringify(query),
-                    limit: limit
-                },
+                data: params,
                 success: function (response) {
-                    var itemRequests = [],
-                        data = [];
-                    if (!_histData) {
-                        itemRequests.push(loadHistData());
-                    }
-                    response.forEach(function (item) {
-                        itemRequests.push(
-                            $.ajax({
-                                url: '/girder/api/v1/item/' + item._id,
-                                dataType: 'json',
-                                success: function (response) {
-                                    data.push(response);
-                                }
-                            })
-                        );
-                    });
-                    $.when.apply($, itemRequests).then(
-                        function () {      // success
-                            data.forEach(function (d) {
-                                var dateTime = d.meta.date.split(' '),
-                                    date = dateTime[0].split('-'),
-                                    time = dateTime[1].split(':');
-                                dateTime = new Date(date[0], date[1] - 1, date[2]);
-                                dateTime.setHours(time[0]);
-                                dateTime.setMinutes(time[1]);
-                                dateTime.setSeconds(time[2]);
-                                d.meta.date = dateTime;
-                                d.symptoms = generateSymptoms();
-                            });
-                            callBack(data);
-                        },
-                        function () {      // fail
-                            alert('Girder data failed to load');
+                    function parseDate (dateString) {
+                        if (dateString instanceof Date) {
+                            return dateString;
                         }
-                    );
+                        var dateTime = dateString.split(' '),
+                            date = dateTime[0].split('-'),
+                            time = dateTime[1].split(':');
+                        dateTime = new Date(date[0], date[1] - 1, date[2]);
+                        dateTime.setHours(time[0]);
+                        dateTime.setMinutes(time[1]);
+                        dateTime.setSeconds(time[2]);
+                        return dateTime;
+                    }
+
+                    loadHistData(function () {
+                        response.forEach(function (d) {
+                            d.meta.date = parseDate(d.meta.date);
+                            d.symptoms = generateSymptoms();
+                        });
+                        callBack(response);
+                    });
                 }
             });
         }
