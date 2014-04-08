@@ -88,11 +88,11 @@ $(function () {
 
     function makePopOver(node, data) {
         var msg = [];
-        msg.push('<b>Summary:</b> ' + data.description);
-        msg.push('<b>Date:</b> ' + data.meta.date.toString());
-        msg.push('<b>Location:</b> ' + data.meta.country);
-        msg.push('<b>Disease:</b> ' + data.meta.disease);
-        msg.push('<b>Symptoms:</b> ' + data.symptoms.join(', '));
+        msg.push('<b>Summary:</b> ' + data.properties.summary);
+        msg.push('<b>Date:</b> ' + data.properties.date.toString());
+        msg.push('<b>Location:</b> ' + data.properties.country);
+        msg.push('<b>Disease:</b> ' + data.properties.disease);
+        msg.push('<b>Symptoms:</b> ' + data.properties.symptoms.join(', '));
         $(node).popover({
             html: true,
             container: 'body',
@@ -112,7 +112,7 @@ $(function () {
             type = $('<select class="form-control"></select>'),
             constraint = {
                 name: field,
-                accessor: tangelo.accessor({field: field}),
+                accessor: tangelo.accessor({field: 'properties.' + field}),
                 type: "link",
                 strength: value
             };
@@ -199,8 +199,8 @@ $(function () {
         if (!spacemapInitialized) {
             spacemapInitialized = true;
             addConstraint("symptoms", 0);
-            addConstraint("meta.disease", 1);
-            addConstraint("meta.country", 0);
+            addConstraint("disease", 1);
+            addConstraint("country", 0);
         }
 
         d3.select("#field-select").selectAll("option")
@@ -237,18 +237,18 @@ $(function () {
             function intersectSymptoms() { return true; }
 
             map.geojsMap('group', 'points', {
-                lat: function (d) { return d.meta.latitude; },
-                lng: function (d) { return d.meta.longitude; },
+                lat: function (d) { return d.geometry.coordinates[1]; },
+                lng: function (d) { return d.geometry.coordinates[0]; },
                 r: function (d) {
                     return '5pt';
                 },
                 data: data,
                 dataIndexer: function (d) {
-                    return d._id;
+                    return d.properties.id;
                 },
                 style: {
                     fill: function (d) {
-                        return color(d.meta.date);
+                        return color(d.properties.date);
                     },
                     'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
                     'stroke-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
@@ -272,7 +272,7 @@ $(function () {
                 enter: {
                     each: function (d) {
                         var link = d3.select(this.parentNode).append('svg:a')
-                            .attr('xlink:href', d.meta.link)
+                            .attr('xlink:href', d.properties.link)
                             .attr('target', 'healthMapInfo');
                         $(link.node()).prepend(this);
                         makePopOver(this, d);
@@ -320,7 +320,7 @@ $(function () {
 
         // Bin the data by hour
         data.forEach(function (d) {
-            var hour = new Date(d.meta.date);
+            var hour = new Date(d.properties.date);
             hour.setMinutes(0);
             hour.setSeconds(0);
             hour.setMilliseconds(0);

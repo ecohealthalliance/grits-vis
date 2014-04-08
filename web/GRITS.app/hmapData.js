@@ -72,7 +72,7 @@
             if (limit) {
                 params.limit = limit;
             }
-            //params.geoJSON = 1;
+            params.geoJSON = 1;
             $.ajax({
                 url: '/girder/api/v1/resource/grits',
                 dataType: 'json',
@@ -93,11 +93,13 @@
                     }
 
                     loadHistData(function () {
-                        response.forEach(function (d) {
-                            d.meta.date = parseDate(d.meta.date);
-                            d.symptoms = generateSymptoms();
+                        var data = [];
+                        response.features.forEach(function (d) {
+                            d.properties.date = parseDate(d.properties.date);
+                            d.properties.symptoms = generateSymptoms();
+                            data.push(d);
                         });
-                        callBack(response);
+                        callBack(data);
                     });
                 }
             });
