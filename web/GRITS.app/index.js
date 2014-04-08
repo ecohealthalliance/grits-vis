@@ -28,6 +28,19 @@ $(function () {
         series = [],
         seriesMap = {};
 
+
+    // helper function to get a sorted array of keys from an object
+    function getKeys(obj) {
+        var keys = [], key;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                keys.push(key);
+            }
+        }
+        keys.sort();
+        return keys;
+    }
+
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
     $(window).resize(function () {
@@ -36,52 +49,6 @@ $(function () {
 
     // Create control panel.
     $("#control-panel").controlPanel();
-
-    // Install a keyup handler on the text input element - after a specified
-    // delay, this will parse the input and send it to registered listeners.
-    d3.select("#symptoms")
-        .on("keyup", (function () {
-            var wait = null,
-                delay = 500,
-                sendSymptoms;
-
-            sendSymptoms = function (that) {
-                var text,
-                    words;
-
-                // Get the input text.
-                text = d3.select(that)
-                    .property("value")
-                    .trim();
-
-                // Split the input by comma, then trim whitespace off the ends
-                // of each piece.
-                words = text.split(",")
-                    .map(function (w) {
-                        return w.trim();
-                    })
-                    .filter(function (w) {
-                        return w !== "";
-                    });
-
-                // Construct and dispatch an event object that has the symptom
-                // list in it.
-                $.event.trigger({
-                    type: "symptoms",
-                    symptoms: words
-                });
-            };
-
-            return function () {
-                // Stop interrupted callbacks from piling up and firing all at
-                // once.
-                if (wait) {
-                    window.clearTimeout(wait);
-                }
-
-                wait = window.setTimeout(sendSymptoms, delay, this);
-            };
-        }()));
 
     // place map in upper left
     map = $('#upper-left').geojsMap({'zoom': 3});
@@ -215,7 +182,7 @@ $(function () {
         var dataStart = _selectedDateRange.values.min,
             dataEnd   = _selectedDateRange.values.max,
             disease = $("#disease").val();
-        loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData) {
+        loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData, allSymptoms, allDiseases) {
             
             if (argData === 'login') {
                 $("#login-panel").modal('show');
@@ -286,6 +253,7 @@ $(function () {
 
             }).trigger('draw');
             updateOthers();
+            updateSymptomsBox(allSymptoms);
         });
     }
 
@@ -346,11 +314,15 @@ $(function () {
                 return true;
             }
             _symptoms.forEach(function (symptom) {
-                d.symptoms.forEach(function (s) {
-                    if (s.toLowerCase() === symptom) {
-                        found = true;
-                    }
-                });
+                if (found || symptom === 'all') {
+                    found = true;
+                } else {
+                    d.properties.symptoms.forEach(function (s) {
+                        if (s.toLowerCase() === symptom) {
+                            found = true;
+                        }
+                    });
+                }
             });
             return found;
         }
@@ -362,10 +334,7 @@ $(function () {
     }
 
     map.on('symptoms', function (e) {
-        _symptoms = [];
-        $.each(e.symptoms, function (i, v) {
-            _symptoms.push(v.toLowerCase());
-        });
+        _symptoms = e.symptoms;
         filterBySymptoms();
         map.geojsMap('group', 'points', {
             data: data,
@@ -500,6 +469,37 @@ $(function () {
             updateData(dataStack.pop());
         }
     });
+
+    function updateSymptomsBox(symptoms) {
+        var main = d3.select("#symptomsSelectContainer");
+        main.selectAll('#symptomsSelectBox').remove();
+        var sel = main.append('select')
+                    .attr('id', 'symptomsSelectBox');
+        sel.node().multiple = true;
+        // TODO: keep selection from last update
+        sel.append('option').attr('value', 'all').text('all').node().selected = true;
+        getKeys(symptoms).forEach(function (s) {
+            sel.append('option')
+                .attr('value', s)
+                .text(s);
+        });
+        sel.on('change', function () {
+            var selectedSymptoms = [];
+            d3.select(this).selectAll('option').each(function () {
+                var name;
+                if (this.selected) {
+                    name = d3.select(this).text();
+                    selectedSymptoms.push(name);
+                }
+            });
+            $.event.trigger({
+                type: 'symptoms',
+                symptoms: selectedSymptoms,
+            });
+        });
+    }
+    updateSymptomsBox([]);
+
 
     // ***** DENDROGRAM in lower right *****
     (function () {

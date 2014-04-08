@@ -91,15 +91,27 @@
                         dateTime.setSeconds(time[2]);
                         return dateTime;
                     }
-
+                    function addKey(obj, key) {
+                        if (obj.hasOwnProperty(key)) {
+                            obj[key]++;
+                        } else {
+                            obj[key] = 1;
+                        }
+                    }
                     loadHistData(function () {
-                        var data = [];
+                        var data = [],
+                            symptoms = {},
+                            diseases = {};
                         response.features.forEach(function (d) {
                             d.properties.date = parseDate(d.properties.date);
                             d.properties.symptoms = generateSymptoms();
+                            addKey(diseases, d.properties.diseases);
+                            d.properties.symptoms.forEach(function (s) {
+                                addKey(symptoms, s);
+                            });
                             data.push(d);
                         });
-                        callBack(data);
+                        callBack(data, symptoms, diseases);
                     });
                 }
             });
