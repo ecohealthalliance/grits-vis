@@ -471,27 +471,36 @@ $(function () {
     });
 
     function updateSymptomsBox(symptoms) {
-        var main = d3.select("#symptomsSelectContainer");
+        function getSelectedSymptoms() {
+            var selected = [];
+            d3.select("#symptomsSelectContainer")
+                .selectAll('option').each(function () {
+                    var t = d3.select(this);
+                    if (t.node().selected) {
+                        selected.push(d3.select(this).text());
+                    }
+            });
+            return selected;
+        }
+        var oldSelected = getSelectedSymptoms(),
+            main = d3.select("#symptomsSelectContainer");
         main.selectAll('#symptomsSelectBox').remove();
         var sel = main.append('select')
                     .attr('id', 'symptomsSelectBox');
         sel.node().multiple = true;
-        // TODO: keep selection from last update
-        sel.append('option').attr('value', 'all').text('all').node().selected = true;
+        sel.append('option').attr('value', 'all').text('all').node().selected = !oldSelected.length;
         getKeys(symptoms).forEach(function (s) {
-            sel.append('option')
+            var opt = sel.append('option')
                 .attr('value', s)
                 .text(s);
+            if (oldSelected.indexOf(s) >= 0) {
+                opt.node().selected = true;
+            } else {
+                opt.node().selected = false;
+            }
         });
         sel.on('change', function () {
-            var selectedSymptoms = [];
-            d3.select(this).selectAll('option').each(function () {
-                var name;
-                if (this.selected) {
-                    name = d3.select(this).text();
-                    selectedSymptoms.push(name);
-                }
-            });
+            var selectedSymptoms = getSelectedSymptoms();
             $.event.trigger({
                 type: 'symptoms',
                 symptoms: selectedSymptoms,
