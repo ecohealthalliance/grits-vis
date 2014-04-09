@@ -38,6 +38,66 @@ $(function () {
     dendrogramApp.initialize('#lower-right');
     spacemapApp.initialize('#upper-right');
 
+    function filterBySymptoms() {
+        function intersectSymptoms(d) {
+            var found = false;
+            if (!_symptoms.length) {
+                return true;
+            }
+            _symptoms.forEach(function (symptom) {
+                if (found || symptom === 'all') {
+                    found = true;
+                } else {
+                    d.properties.symptoms.forEach(function (s) {
+                        if (s.toLowerCase() === symptom) {
+                            found = true;
+                        }
+                    });
+                }
+            });
+            return found;
+        }
+
+        data = [];
+        allData.forEach(function (d) {
+            if (intersectSymptoms(d)) { data.push(d); }
+        });
+    }
+
+    function getSelectedSymptoms() {
+        var selected = [];
+        d3.select("#symptomsSelectContainer")
+            .selectAll('option').each(function () {
+                var t = d3.select(this);
+                if (t.node().selected) {
+                    selected.push(d3.select(this).text());
+                }
+        });
+        return selected;
+    }
+
+    function updateSymptomsBox(symptoms) {
+        var oldSelected = getSelectedSymptoms(),
+            box = d3.select('#symptomsSelectBox');
+
+        box.selectAll('option').remove();
+
+        box.append('option')
+            .attr('value', 'all')
+            .text('all')
+            .node().selected = ( !oldSelected.length || 
+                                  oldSelected.indexOf('all') >= 0);
+        getKeys(symptoms).forEach(function (s) {
+            var opt = box.append('option')
+                .attr('value', s)
+                .text(s);
+            if (oldSelected.indexOf(s) >= 0) {
+                opt.node().selected = true;
+            } else {
+                opt.node().selected = false;
+            }
+        });
+    }
 
     function updateEverything() {
         var dataStart = _selectedDateRange.values.min,
@@ -48,7 +108,8 @@ $(function () {
             if (argData === 'login') {
                 $("#login-panel").modal('show');
                 return;
-            } else if (argData === 'group') {
+            }
+            if (argData === 'group') {
                 $("#group-panel").modal('show');
                 return;
             }
@@ -92,31 +153,6 @@ $(function () {
         updateEverything();
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
 
-    function filterBySymptoms() {
-        function intersectSymptoms(d) {
-            var found = false;
-            if (!_symptoms.length) {
-                return true;
-            }
-            _symptoms.forEach(function (symptom) {
-                if (found || symptom === 'all') {
-                    found = true;
-                } else {
-                    d.properties.symptoms.forEach(function (s) {
-                        if (s.toLowerCase() === symptom) {
-                            found = true;
-                        }
-                    });
-                }
-            });
-            return found;
-        }
-
-        data = [];
-        allData.forEach(function (d) {
-            if (intersectSymptoms(d)) { data.push(d); }
-        });
-    }
 
     $('#dataLimit').change(function (evt) {
         _queryLimit = parseInt($(this).val(), 10);
@@ -125,44 +161,16 @@ $(function () {
     }).val(_queryLimit.toString());
 
 
-    function updateSymptomsBox(symptoms) {
-        function getSelectedSymptoms() {
-            var selected = [];
-            d3.select("#symptomsSelectContainer")
-                .selectAll('option').each(function () {
-                    var t = d3.select(this);
-                    if (t.node().selected) {
-                        selected.push(d3.select(this).text());
-                    }
+    d3.select('#symptomsSelectContainer')
+        .append('select')
+            .attr('id', 'symptomsSelectBox')
+            .call(function () {
+                this.node().multiple = true;
+            })
+            .on('change', function () {
+                _symptoms = getSelectedSymptoms();
+                updateEverything();
             });
-            return selected;
-        }
-        var oldSelected = getSelectedSymptoms(),
-            main = d3.select("#symptomsSelectContainer");
-        main.selectAll('#symptomsSelectBox').remove();
-        var sel = main.append('select')
-                    .attr('id', 'symptomsSelectBox');
-        sel.node().multiple = true;
-        sel.append('option')
-            .attr('value', 'all')
-            .text('all')
-            .node().selected = ( !oldSelected.length || 
-                                  oldSelected.indexOf('all') >= 0);
-        getKeys(symptoms).forEach(function (s) {
-            var opt = sel.append('option')
-                .attr('value', s)
-                .text(s);
-            if (oldSelected.indexOf(s) >= 0) {
-                opt.node().selected = true;
-            } else {
-                opt.node().selected = false;
-            }
-        });
-        sel.on('change', function () {
-            _symptoms = getSelectedSymptoms();
-            updateEverything();
-        });
-    }
     updateSymptomsBox([]);
 
 });
