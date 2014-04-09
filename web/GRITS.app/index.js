@@ -1,12 +1,21 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*globals console, d3, $, loadHealthMapData, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp*/
+/*globals console, d3, $, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp*/
 
-$(function () {
+window.gritsLoader(function (loadHealthMapData) {
     "use strict";
     var defaultStart = new Date(2014, 0, 1),
         defaultEnd = new Date(2014, 2, 17),
         _queryLimit = 250,
         _savedSpecies = {};
+
+    if (loadHealthMapData === 'login') {
+        $("#login-panel").modal('show');
+        return;
+    }
+    if (loadHealthMapData === 'group') {
+        $("#group-panel").modal('show');
+        return;
+    }
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -121,14 +130,6 @@ $(function () {
                 return filteredData;
             }
 
-            if (argData === 'login') {
-                $("#login-panel").modal('show');
-                return;
-            }
-            if (argData === 'group') {
-                $("#group-panel").modal('show');
-                return;
-            }
 
             $('#itemNumber').text(argData.length.toString() + " records loaded");
             var data = filterBySymptoms(argData);
