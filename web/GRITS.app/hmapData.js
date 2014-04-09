@@ -5,7 +5,9 @@
 
     var _logInOkay = null;
 
-    window.loadHealthMapData = function (startDate, endDate, disease, limit, callBack) {
+    window.loadHealthMapData = function (startDate, endDate, species, disease, limit, callBack) {
+        disease = disease[0];
+        species = species[0];
         function fetchData() {
             var params = {};
             if (startDate) {
@@ -14,14 +16,18 @@
             if (endDate) {
                 params.end = endDate.toISOString();
             }
-            if (disease !== 'All') {
+            if (disease && disease.toLowerCase() !== 'all') {
                 params.disease = disease;
             }
             if (limit) {
                 params.limit = limit;
             }
+            if (species && species.toLowerCase() !== 'all') {
+                params.species = species;
+            }
             params.geoJSON = 1;
             params.randomSymptoms = 1;
+            params.disableRegex = 1;
             $.ajax({
                 url: '/girder/api/v1/resource/grits',
                 dataType: 'json',
@@ -29,7 +35,8 @@
                 success: function (response) {
                     var data = [],
                         symptoms = {},
-                        diseases = {};
+                        diseases = {},
+                        speciess = {};
                     function parseDate (dateString) {
                         if (dateString instanceof Date) {
                             return dateString;
@@ -52,13 +59,14 @@
                     }
                     response.features.forEach(function (d) {
                         d.properties.date = parseDate(d.properties.date);
-                        addKey(diseases, d.properties.diseases);
+                        addKey(diseases, d.properties.disease);
                         d.properties.symptoms.forEach(function (s) {
                             addKey(symptoms, s);
                         });
+                        addKey(speciess, d.properties.species);
                         data.push(d);
                     });
-                    callBack(data, symptoms, diseases);
+                    callBack(data, symptoms, speciess, diseases);
                 }
             });
         }

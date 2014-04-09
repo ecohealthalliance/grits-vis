@@ -5,21 +5,8 @@ $(function () {
     "use strict";
     var defaultStart = new Date(2014, 0, 1),
         defaultEnd = new Date(2014, 2, 17),
-        _symptoms = [],
-        _queryLimit = 250;
-
-
-    // helper function to get a sorted array of keys from an object
-    function getKeys(obj) {
-        var keys = [], key;
-        for (key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                keys.push(key);
-            }
-        }
-        keys.sort();
-        return keys;
-    }
+        _queryLimit = 250,
+        _savedSpecies = {};
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -35,58 +22,87 @@ $(function () {
     dendrogramApp.initialize('#lower-right');
     spacemapApp.initialize('#upper-right');
 
-    function getSelectedSymptoms() {
-        var selected = [];
-        d3.select("#symptomsSelectContainer")
+    function getSelectedOptions(node) {
+        var selected = [], all = false;
+        d3.select(node)
             .selectAll('option').each(function () {
-                var t = d3.select(this);
-                if (t.node().selected) {
-                    selected.push(d3.select(this).text());
+                if (this.text === 'all' && this.selected) {
+                    all = true;
+                }
+                if (all || this.selected) {
+                    selected.push(this.text);
                 }
         });
         return selected;
     }
-
-    function updateSymptomsBox(symptoms) {
-        var oldSelected = getSelectedSymptoms(),
-            box = d3.select('#symptomsSelectBox');
-
-        box.selectAll('option').remove();
-
-        box.append('option')
-            .attr('value', 'all')
-            .text('all')
-            .node().selected = ( !oldSelected.length || 
-                                  oldSelected.indexOf('all') >= 0);
-        getKeys(symptoms).forEach(function (s) {
-            var opt = box.append('option')
-                .attr('value', s)
-                .text(s);
-            if (oldSelected.indexOf(s) >= 0) {
-                opt.node().selected = true;
-            } else {
-                opt.node().selected = false;
+    
+    function getArrayFromKeys(obj) {
+        var keys = [], key;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                keys.push(key);
             }
+        }
+        return keys;
+    }
+
+    function multiSelectBox(node, items) {
+        // generate a multi-select ui element with the given items
+        
+        var allItems = ['All'].concat(items || []),
+            selection = d3.select(node)
+            .selectAll('option')
+                .data(allItems, function (i) { return i; });
+        
+        function makeUpper(s) {
+            return s;
+            //return s[0].toUpperCase() + s.substr(1);
+        }
+
+        selection.enter()
+            .append('option')
+                .text(function (d) { return makeUpper(d); })
+                .filter(function (d) { return d === 'All'; })
+                .each(function (d) {
+                    this.selected = true;
+                });
+        
+        selection.exit()
+            .remove();
+        selection.sort(function (a, b) {
+            // sort by key, except all goes first
+            if ( a === 'All' ) {
+                return -1;
+            }
+            if ( b === 'All' ) {
+                return 1;
+            }
+            if ( a === b ) {
+                return 0;
+            }
+            return a < b ? -1 : 1;
         });
+        return node;
     }
 
     function updateEverything() {
 
-
         var dataStart = $('#dateRangeSlider').dateRangeSlider('min'),
             dataEnd = $('#dateRangeSlider').dateRangeSlider('max'),
-            disease = $("#disease").val();
-        loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData, allSymptoms, allDiseases) {
+            symptoms = getSelectedOptions('#symptomsSelectBox'),
+            diseases = getSelectedOptions('#diseaseSelectBox'),
+            species = getSelectedOptions('#speciesSelectBox');
+        loadHealthMapData(dataStart, dataEnd, species, diseases, _queryLimit, function (argData, allSymptoms, allSpecies, allDiseases) {
             
             function filterBySymptoms(allData) {
                 var filteredData = [];
                 function intersectSymptoms(d) {
                     var found = false;
-                    if (!_symptoms.length) {
+                    if (!symptoms.length) {
                         return true;
                     }
-                    _symptoms.forEach(function (symptom) {
-                        if (found || symptom === 'all') {
+                    symptoms.forEach(function (symptom) {
+                        if (found || symptom === 'All') {
                             found = true;
                         } else {
                             d.properties.symptoms.forEach(function (s) {
@@ -121,19 +137,16 @@ $(function () {
                 data: data,
                 dataStart: dataStart,
                 dataEnd: dataEnd,
-                disease: disease,
-                symptoms: _symptoms,
+                symptoms: symptoms,
                 allSymptoms: allSymptoms,
                 allDiseases: allDiseases
             });
 
-            updateSymptomsBox(allSymptoms);
+            multiSelectBox('#symptomsSelectBox', getArrayFromKeys(allSymptoms));
+            multiSelectBox('#diseaseSelectBox', getArrayFromKeys(allDiseases));
+            multiSelectBox('#speciesSelectBox', getArrayFromKeys($.extend(_savedSpecies, allSpecies)));
         });
     }
-
-    d3.select("#disease").on("change", function () {
-        updateEverything();
-    });
 
     // create date range slider
     $('#dateRangeSlider').dateRangeSlider({
@@ -146,25 +159,28 @@ $(function () {
             min: defaultStart,
             max: defaultEnd
         }
-    }).on('valuesChanged', updateEverything)
-      .trigger('valuesChanged');
+    }).on('valuesChanged', updateEverything);
 
 
     $('#dataLimit').change(function (evt) {
         _queryLimit = parseInt($(this).val(), 10);
         updateEverything();
     }).val(_queryLimit.toString());
+    
+    d3.select(multiSelectBox('#symptomsSelectBox'))
+        .on('change', function () {
+            updateEverything();
+        });
+    
+    d3.select(multiSelectBox('#diseaseSelectBox'))
+        .on('change', function () {
+            updateEverything();
+        });
+    
+    d3.select(multiSelectBox('#speciesSelectBox'))
+        .on('change', function () {
+            updateEverything();
+        });
 
-    d3.select('#symptomsSelectContainer')
-        .append('select')
-            .attr('id', 'symptomsSelectBox')
-            .call(function () {
-                this.node().multiple = true;
-            })
-            .on('change', function () {
-                _symptoms = getSelectedSymptoms();
-                updateEverything();
-            });
-    updateSymptomsBox([]);
-
+    updateEverything();
 });
