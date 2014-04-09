@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*globals console, d3, $, loadHealthMapData, tangelo, mapApp*/
+/*globals console, d3, $, loadHealthMapData, tangelo, mapApp, timelineApp*/
 
 $(function () {
     "use strict";
@@ -23,9 +23,7 @@ $(function () {
         _selectedDateRange,
         spacemapInitialized = false,
         allData = [],
-        data = [],
-        series = [],
-        seriesMap = {};
+        data = [];
 
 
     // helper function to get a sorted array of keys from an object
@@ -50,6 +48,7 @@ $(function () {
     $("#control-panel").controlPanel();
 
     mapApp.initialize('#upper-left');
+    timelineApp.initialize('#lower-left');
 
     function addConstraint(field, value) {
         // var row = $('<div class="form-group"></div>'),
@@ -199,32 +198,9 @@ $(function () {
     }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
 
     function updateOthers() {
-        series = [];
-        seriesMap = {};
         // Update spacemap
         updateData(data);
 
-        // Update timeline
-
-        // Bin the data by hour
-        data.forEach(function (d) {
-            var hour = new Date(d.properties.date);
-            hour.setMinutes(0);
-            hour.setSeconds(0);
-            hour.setMilliseconds(0);
-            if (!seriesMap[hour]) {
-                seriesMap[hour] = {date: hour, count: 0};
-                series.push(seriesMap[hour]);
-            }
-            seriesMap[hour].count += 1;
-        });
-        series.sort(function (a, b) { return d3.ascending(a.date, b.date); });
-        $('#lower-left').empty();
-        $('#lower-left').timeline({
-            data: series,
-            date: {field: "date"},
-            y: [{field: "count"}]
-        });
     }
 
     function filterBySymptoms() {
