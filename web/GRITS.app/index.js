@@ -1,10 +1,9 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*globals console, d3, $, loadHealthMapData, colorbrewer, tangelo */
+/*globals console, d3, $, loadHealthMapData, tangelo, mapApp*/
 
 $(function () {
     "use strict";
-    var map,
-        spacemap,
+    var spacemap,
         constraints = [],
         dataStack = [],
         types = [
@@ -50,24 +49,7 @@ $(function () {
     // Create control panel.
     $("#control-panel").controlPanel();
 
-    // place map in upper left
-    map = $('#upper-left').geojsMap({'zoom': 3});
-
-    function makePopOver(node, data) {
-        var msg = [];
-        msg.push('<b>Summary:</b> ' + data.properties.summary);
-        msg.push('<b>Date:</b> ' + data.properties.date.toString());
-        msg.push('<b>Location:</b> ' + data.properties.country);
-        msg.push('<b>Disease:</b> ' + data.properties.disease);
-        msg.push('<b>Symptoms:</b> ' + data.properties.symptoms.join(', '));
-        $(node).popover({
-            html: true,
-            container: 'body',
-            placement: 'auto top',
-            trigger: 'manual',
-            content: msg.join('<br>\n')
-        });
-    }
+    mapApp.initialize('#upper-left');
 
     function addConstraint(field, value) {
         // var row = $('<div class="form-group"></div>'),
@@ -124,21 +106,6 @@ $(function () {
 
         currentData = data;
 
-        // data = d;
-        // data = d.nodes.slice(10);
-        // data.forEach(function (d) {
-        //     d.lat = +d.lat;
-        //     d.lon = +d.lon;
-        //     d.random = Math.random();
-        //     d.category = Math.round(Math.random() * 10);
-        //     d.time = new Date();
-        //     if (d.title.indexOf(">") >= 0) {
-        //         d.shortTitle = d.title.split(">")[1].split("-")[0];
-        //     } else {
-        //         d.shortTitle = d.title.split(":")[1];
-        //     }
-        // });
-
         // Discover fields
         data.forEach(function (d) {
             var field, subfield;
@@ -192,66 +159,19 @@ $(function () {
                 return;
             }
 
-            var defaultFill = 0.9,
-                unselectFill = 1e-6,
-                cscale = colorbrewer.YlGnBu[3],
-                midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
-                color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
-
             allData = argData;
             $('#itemNumber').text(allData.length.toString() + " records loaded");
             filterBySymptoms();
-            function intersectSymptoms() { return true; }
 
-            map.geojsMap('group', 'points', {
-                lat: function (d) { return d.geometry.coordinates[1]; },
-                lng: function (d) { return d.geometry.coordinates[0]; },
-                r: function (d) {
-                    return '5pt';
-                },
+            $('.content').trigger('datachanged', {
                 data: data,
-                dataIndexer: function (d) {
-                    return d.properties.id;
-                },
-                style: {
-                    fill: function (d) {
-                        return color(d.properties.date);
-                    },
-                    'fill-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
-                    'stroke-opacity': function (d) { return intersectSymptoms(d) ? defaultFill : unselectFill; },
-                    'stroke': 'black',
-                    'stroke-width': '0.5pt',
-                    'pointer-events': function (d) {
-                        return intersectSymptoms(d) ? 'auto' : 'none';
-                    }
-                },
-                handlers: {
-                    'click': function (d) {
-                        console.log(d);
-                    },
-                    'mouseover': function () {
-                        $(this).popover('show');
-                    },
-                    'mouseout': function () {
-                        $(this).popover('hide');
-                    }
-                },
-                enter: {
-                    each: function (d) {
-                        var link = d3.select(this.parentNode).append('svg:a')
-                            .attr('xlink:href', d.properties.link)
-                            .attr('target', 'healthMapInfo');
-                        $(link.node()).prepend(this);
-                        makePopOver(this, d);
-                    }
-                },
-                exit: {
-                    each: function (d) {
-                        $(this).parent().remove();
-                    }
-                }
+                dataStart: dataStart,
+                dataEnd: dataEnd,
+                disease: disease,
+                allSymptoms: allSymptoms,
+                allDiseases: allDiseases
+            });
 
-            }).trigger('draw');
             updateOthers();
             updateSymptomsBox(allSymptoms);
         });
@@ -332,18 +252,6 @@ $(function () {
             if (intersectSymptoms(d)) { data.push(d); }
         });
     }
-
-    map.on('symptoms', function (e) {
-        _symptoms = e.symptoms;
-        filterBySymptoms();
-        map.geojsMap('group', 'points', {
-            data: data,
-            transition: {
-                duration: 1000
-            }
-        }).trigger('draw');
-        updateOthers();
-    });
 
     $('#dataLimit').change(function (evt) {
         _queryLimit = parseInt($(this).val(), 10);
@@ -488,7 +396,11 @@ $(function () {
         var sel = main.append('select')
                     .attr('id', 'symptomsSelectBox');
         sel.node().multiple = true;
-        sel.append('option').attr('value', 'all').text('all').node().selected = !oldSelected.length;
+        sel.append('option')
+            .attr('value', 'all')
+            .text('all')
+            .node().selected = ( !oldSelected.length || 
+                                  oldSelected.indexOf('all') >= 0);
         getKeys(symptoms).forEach(function (s) {
             var opt = sel.append('option')
                 .attr('value', s)
@@ -500,11 +412,8 @@ $(function () {
             }
         });
         sel.on('change', function () {
-            var selectedSymptoms = getSelectedSymptoms();
-            $.event.trigger({
-                type: 'symptoms',
-                symptoms: selectedSymptoms,
-            });
+            _symptoms = getSelectedSymptoms();
+            updateEverything();
         });
     }
     updateSymptomsBox([]);
