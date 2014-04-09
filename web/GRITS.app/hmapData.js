@@ -6,8 +6,6 @@
     var _logInOkay = null;
 
     window.loadHealthMapData = function (startDate, endDate, species, disease, limit, callBack) {
-        disease = disease[0];
-        species = species[0];
         function fetchData() {
             var params = {};
             if (startDate) {
@@ -16,14 +14,14 @@
             if (endDate) {
                 params.end = endDate.toISOString();
             }
-            if (disease && disease.toLowerCase() !== 'all') {
-                params.disease = disease;
+            if (disease && disease.length > 0 && disease[0].toLowerCase() !== 'all') {
+                params.disease = JSON.stringify(disease);
             }
             if (limit) {
                 params.limit = limit;
             }
-            if (species && species.toLowerCase() !== 'all') {
-                params.species = species;
+            if (species && species.length > 0 && species[0].toLowerCase() !== 'all') {
+                params.species = JSON.stringify(species);
             }
             params.geoJSON = 1;
             params.randomSymptoms = 1;
