@@ -6,10 +6,7 @@ $(function () {
     var defaultStart = new Date(2014, 0, 1),
         defaultEnd = new Date(2014, 2, 17),
         _symptoms = [],
-        _queryLimit = 250,
-        _selectedDateRange,
-        allData = [],
-        data = [];
+        _queryLimit = 250;
 
 
     // helper function to get a sorted array of keys from an object
@@ -37,32 +34,6 @@ $(function () {
     timelineApp.initialize('#lower-left');
     dendrogramApp.initialize('#lower-right');
     spacemapApp.initialize('#upper-right');
-
-    function filterBySymptoms() {
-        function intersectSymptoms(d) {
-            var found = false;
-            if (!_symptoms.length) {
-                return true;
-            }
-            _symptoms.forEach(function (symptom) {
-                if (found || symptom === 'all') {
-                    found = true;
-                } else {
-                    d.properties.symptoms.forEach(function (s) {
-                        if (s.toLowerCase() === symptom) {
-                            found = true;
-                        }
-                    });
-                }
-            });
-            return found;
-        }
-
-        data = [];
-        allData.forEach(function (d) {
-            if (intersectSymptoms(d)) { data.push(d); }
-        });
-    }
 
     function getSelectedSymptoms() {
         var selected = [];
@@ -100,11 +71,40 @@ $(function () {
     }
 
     function updateEverything() {
-        var dataStart = _selectedDateRange.values.min,
-            dataEnd   = _selectedDateRange.values.max,
+
+
+        var dataStart = $('#dateRangeSlider').dateRangeSlider('min'),
+            dataEnd = $('#dateRangeSlider').dateRangeSlider('max'),
             disease = $("#disease").val();
         loadHealthMapData(dataStart, dataEnd, disease, _queryLimit, function (argData, allSymptoms, allDiseases) {
             
+            function filterBySymptoms(allData) {
+                var filteredData = [];
+                function intersectSymptoms(d) {
+                    var found = false;
+                    if (!_symptoms.length) {
+                        return true;
+                    }
+                    _symptoms.forEach(function (symptom) {
+                        if (found || symptom === 'all') {
+                            found = true;
+                        } else {
+                            d.properties.symptoms.forEach(function (s) {
+                                if (s.toLowerCase() === symptom) {
+                                    found = true;
+                                }
+                            });
+                        }
+                    });
+                    return found;
+                }
+
+                allData.forEach(function (d) {
+                    if (intersectSymptoms(d)) { filteredData.push(d); }
+                });
+                return filteredData;
+            }
+
             if (argData === 'login') {
                 $("#login-panel").modal('show');
                 return;
@@ -114,9 +114,8 @@ $(function () {
                 return;
             }
 
-            allData = argData;
-            $('#itemNumber').text(allData.length.toString() + " records loaded");
-            filterBySymptoms();
+            $('#itemNumber').text(argData.length.toString() + " records loaded");
+            var data = filterBySymptoms(argData);
 
             $('.content').trigger('datachanged', {
                 data: data,
@@ -147,19 +146,14 @@ $(function () {
             min: defaultStart,
             max: defaultEnd
         }
-    }).on('valuesChanged', function (e, dates) {
-        // add a new feature group, add some data, and trigger a draw
-        _selectedDateRange = dates;
-        updateEverything();
-    }).trigger('valuesChanged', { values: { min: defaultStart, max: defaultEnd }});
+    }).on('valuesChanged', updateEverything)
+      .trigger('valuesChanged');
 
 
     $('#dataLimit').change(function (evt) {
         _queryLimit = parseInt($(this).val(), 10);
-        console.log(_queryLimit);
-        $('#dateRangeSlider').trigger('valuesChanged', _selectedDateRange);
+        updateEverything();
     }).val(_queryLimit.toString());
-
 
     d3.select('#symptomsSelectContainer')
         .append('select')
