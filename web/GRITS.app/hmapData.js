@@ -3,59 +3,7 @@
 (function ($) {
     "use strict";
 
-    var _histData = null;
     var _logInOkay = null;
-    function loadHistData(callBack) {
-        if (_histData) {
-            callBack();
-        }
-        return $.ajax({
-            url: 'data/symptomsHist.json',
-            dataType: 'json',
-            success: function (response) {
-                _histData = response;
-                callBack();
-            },
-            error: function () {
-                alert('Failed to load symptoms data.');
-            }
-        });
-    }
-
-    // generate a random list of symptoms from a probability distribution
-    function generateSymptoms() {
-        function rSelect(h) {
-            var cdf = h.cdf, val = h.value,
-                i = Math.random(), minVal = 2, minIdx = -1;
-            cdf.forEach(function (v, k) {
-                if (i <= v && v < minVal) {
-                    minVal = v;
-                    minIdx = k;
-                }
-            });
-            return val[minIdx];
-        }
-
-        var N = rSelect(_histData.nSymptoms), symptoms = [], i, repeat, s;
-        function inList(d) {
-            var v = false;
-            symptoms.forEach(function (t) {
-                if (d === t) {
-                    v = true;
-                }
-            });
-            return v;
-        }
-        for (i = 0; i < N; i += 1) {
-            repeat = true;
-            while (repeat) {
-                s = rSelect(_histData.symptoms);
-                repeat = inList(s);
-            }
-            symptoms.push(s);
-        }
-        return symptoms;
-    }
 
     window.loadHealthMapData = function (startDate, endDate, disease, limit, callBack) {
         function fetchData() {
@@ -73,11 +21,15 @@
                 params.limit = limit;
             }
             params.geoJSON = 1;
+            params.randomSymptoms = 1;
             $.ajax({
                 url: '/girder/api/v1/resource/grits',
                 dataType: 'json',
                 data: params,
                 success: function (response) {
+                    var data = [],
+                        symptoms = {},
+                        diseases = {};
                     function parseDate (dateString) {
                         if (dateString instanceof Date) {
                             return dateString;
@@ -98,21 +50,15 @@
                             obj[key] = 1;
                         }
                     }
-                    loadHistData(function () {
-                        var data = [],
-                            symptoms = {},
-                            diseases = {};
-                        response.features.forEach(function (d) {
-                            d.properties.date = parseDate(d.properties.date);
-                            d.properties.symptoms = generateSymptoms();
-                            addKey(diseases, d.properties.diseases);
-                            d.properties.symptoms.forEach(function (s) {
-                                addKey(symptoms, s);
-                            });
-                            data.push(d);
+                    response.features.forEach(function (d) {
+                        d.properties.date = parseDate(d.properties.date);
+                        addKey(diseases, d.properties.diseases);
+                        d.properties.symptoms.forEach(function (s) {
+                            addKey(symptoms, s);
                         });
-                        callBack(data, symptoms, diseases);
+                        data.push(d);
                     });
+                    callBack(data, symptoms, diseases);
                 }
             });
         }
