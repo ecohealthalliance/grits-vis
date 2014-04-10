@@ -3,7 +3,7 @@
 
 window.gritsLoader(function (loadHealthMapData, targetIncident) {
     "use strict";
-    var defaultStart = new Date(2012, 3, 1),
+    var defaultStart = new Date(2014, 3, 1),
         defaultEnd = new Date(2014, 3, 5),
         _queryLimit = 250,
         _savedSpecies = {};
@@ -175,7 +175,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     $('#dateRangeSlider').dateRangeSlider({
         range: true,
         bounds: {
-            min: new Date(2014, 0, 1),
+            min: new Date(2012, 3, 1),
             max: new Date(2014, 3, 5)
         },
         defaultValues: {
