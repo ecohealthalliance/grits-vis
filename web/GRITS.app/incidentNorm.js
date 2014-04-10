@@ -82,10 +82,10 @@
                 c3 = norm.cLocation * norm.cSpecies,
                 c4 = norm.cTime * norm.cTime,
                 c = Math.sqrt(c1 + c2 + c3 + c4) || 1,
-                n1 = speciesNorm(norm.target, x),
-                n2 = symptomNorm(norm.target, x),
-                n3 = distNorm(norm.target, x),
-                n4 = timeNorm(norm.target, x);
+                n1 = Math.min(speciesNorm(norm.target, x), 1),
+                n2 = Math.min(symptomNorm(norm.target, x), 1),
+                n3 = Math.min(distNorm(norm.target, x), 1),
+                n4 = Math.min(timeNorm(norm.target, x), 1);
             return {
                 value: Math.sqrt(
                 c1 * n1 * n1 + 

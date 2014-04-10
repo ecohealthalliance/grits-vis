@@ -74,6 +74,8 @@
             selection.exit()
                 .remove();
             selection
+                .transition()
+                    .duration(duration)
                 .attr('cx', function (d) {
                     return xAx(that.x(d));
                 })
