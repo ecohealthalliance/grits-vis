@@ -2,7 +2,7 @@
 (function () {
 
     var _p = Math.PI/180,
-        _mpy = 365 * 24 * 60 * 60 * 1000;
+        _mpy = 7 * 24 * 60 * 60 * 1000;
     function distNorm(a, b) {
         // distance between points on a sphere
         // scaled so that points on opposite sides have distance 1
@@ -24,7 +24,7 @@
     }
 
     function timeNorm(a, b) {
-        // distance in time scaled so that 1 year === 1
+        // distance in time scaled so that 1 week === 1
         var t1 = a.properties.date,
             t2 = b.properties.date;
         return (Math.abs(t1 - t2) / _mpy);
@@ -86,12 +86,30 @@
                 n2 = symptomNorm(norm.target, x),
                 n3 = distNorm(norm.target, x),
                 n4 = timeNorm(norm.target, x);
-            return Math.sqrt(
+            return {
+                value: Math.sqrt(
                 c1 * n1 * n1 + 
                 c2 * n2 * n2 +
                 c3 * n3 * n3 +
                 c4 * n4 * n4
-            )/c;
+                )/c,
+                species: {
+                    c: c1,
+                    value: n1
+                },
+                symptoms: {
+                    c: c2,
+                    value: n2
+                },
+                distance: {
+                    c: c3,
+                    value: n3
+                },
+                time: {
+                    c: c4,
+                    value: n4
+                }
+            };
         }
         norm.cSpecies = arg.cSpecies || 0;
         norm.cSymptoms = arg.cSymptoms || 0;

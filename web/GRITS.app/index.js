@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*globals console, d3, $, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp, IncidentNorm*/
+/*globals console, d3, $, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp, IncidentNorm, similarityApp*/
 
 window.gritsLoader(function (loadHealthMapData, targetIncident) {
     "use strict";
@@ -32,6 +32,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     timelineApp.initialize('#lower-left');
     dendrogramApp.initialize('#lower-right');
     spacemapApp.initialize('#upper-right');
+    similarityApp.initialize('#similarity-dialog-content');
 
     function getSelectedOptions(node) {
         var selected = [], all = false;
@@ -180,8 +181,10 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
 
             // add similarity score
             data.forEach(function (d) {
-                var n = Math.min(norm(d), 1);
+                var o = norm(d),
+                    n = Math.min(o.value, 1);
                 d.properties.score = 1 - n*n;
+                d.properties.scoreObj = o;
             });
 
             // sort by similarity
