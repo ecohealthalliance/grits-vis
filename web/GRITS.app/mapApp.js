@@ -55,6 +55,9 @@
             },
             style: {
                 fill: function (d) {
+                    if (d.properties.score > 0.99) {
+                        return 'red';
+                    }
                     return color(d.properties.date);
                 },
                 'fill-opacity': opacity,

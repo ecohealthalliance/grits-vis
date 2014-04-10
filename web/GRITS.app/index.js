@@ -3,8 +3,8 @@
 
 window.gritsLoader(function (loadHealthMapData, targetIncident) {
     "use strict";
-    var defaultStart = new Date(2014, 0, 1),
-        defaultEnd = new Date(2014, 3, 3),
+    var defaultStart = new Date(2012, 3, 1),
+        defaultEnd = new Date(2014, 3, 5),
         _queryLimit = 250,
         _savedSpecies = {};
 
@@ -109,7 +109,8 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
                 target: targetIncident,
                 cSpecies: 1.0,
                 cSymptoms: 1.0,
-                cLocation: 1.0
+                cLocation: 1.0,
+                cTime: 1.0
             });
             
             function filterBySymptoms(allData) {
@@ -174,7 +175,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     $('#dateRangeSlider').dateRangeSlider({
         range: true,
         bounds: {
-            min: new Date(2012, 3, 5),
+            min: new Date(2014, 0, 1),
             max: new Date(2014, 3, 5)
         },
         defaultValues: {

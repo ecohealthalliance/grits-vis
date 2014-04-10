@@ -1,7 +1,8 @@
 /*jslint browser: true, nomen: true, unparam: true*/
 (function () {
 
-    var _p = Math.PI/180;
+    var _p = Math.PI/180,
+        _mpy = 365 * 24 * 60 * 60 * 1000;
     function distNorm(a, b) {
         // distance between points on a sphere
         // scaled so that points on opposite sides have distance 1
@@ -22,9 +23,16 @@
 
     }
 
+    function timeNorm(a, b) {
+        // distance in time scaled so that 1 year === 1
+        var t1 = a.properties.date,
+            t2 = b.properties.date;
+        return (Math.abs(t1 - t2) / _mpy);
+    }
+
     function speciesNorm(a, b) {
         // discrete norm in species name
-        return a.properties.species === b.properties.species ? 1 : 0;
+        return a.properties.species === b.properties.species ? 0 : 1;
     }
 
     function symptomNorm(a, b) {
@@ -72,19 +80,23 @@
             var c1 = norm.cSpecies * norm.cSpecies,
                 c2 = norm.cSymptoms * norm.cSpecies,
                 c3 = norm.cLocation * norm.cSpecies,
-                c = Math.sqrt(c1 + c2 + c3) || 1,
+                c4 = norm.cTime * norm.cTime,
+                c = Math.sqrt(c1 + c2 + c3 + c4) || 1,
                 n1 = speciesNorm(norm.target, x),
                 n2 = symptomNorm(norm.target, x),
-                n3 = distNorm(norm.target, x);
+                n3 = distNorm(norm.target, x),
+                n4 = timeNorm(norm.target, x);
             return Math.sqrt(
                 c1 * n1 * n1 + 
                 c2 * n2 * n2 +
-                c3 * n3 * n3
+                c3 * n3 * n3 +
+                c4 * n4 * n4
             )/c;
         }
         norm.cSpecies = arg.cSpecies || 0;
         norm.cSymptoms = arg.cSymptoms || 0;
         norm.cLocation = arg.cLocation || 0;
+        norm.cTime = arg.cTime || 0;
         norm.target = arg.target || null;
         
         return norm;

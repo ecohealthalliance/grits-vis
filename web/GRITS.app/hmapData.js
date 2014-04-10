@@ -41,6 +41,7 @@
                 },
                 success: function (response) {
                     loadedIncident = response.features[0];
+                    loadedIncident.properties.symptoms.sort();
                     loadedIncident.properties.date = parseDate(loadedIncident.properties.date);
                     loadedIncidentId = loadedIncident.properties.id;
                     callBack(loadedIncident);
