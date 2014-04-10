@@ -16,6 +16,7 @@
         msg.push('<b>Location:</b> ' + data.properties.country);
         msg.push('<b>Disease:</b> ' + data.properties.disease);
         msg.push('<b>Symptoms:</b> ' + data.properties.symptoms.join(', '));
+        msg.push('<b>Species:</b> ' + data.properties.species);
         msg.push('<b>Similarity:</b> ' + data.properties.score.toFixed(2));
         $(node).popover({
             html: true,
