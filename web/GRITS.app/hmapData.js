@@ -83,6 +83,7 @@
                 response.features.forEach(function (d) {
                     d.properties.date = parseDate(d.properties.date);
                     addKey(diseases, d.properties.disease);
+                    d.properties.symptoms.sort();
                     d.properties.symptoms.forEach(function (s) {
                         addKey(symptoms, s);
                     });
@@ -102,8 +103,8 @@
             success: function (response) {
                 if (response) {
                     if (response.groups && response.groups.length > 0) { // should test if it is the correct group, but... later
-                        loadTargetIncident(function () {
-                            callBack(loadHealthMapData);
+                        loadTargetIncident(function (incident) {
+                            callBack(loadHealthMapData, incident);
                         });
                     } else {
                         callBack("group");

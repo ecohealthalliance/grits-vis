@@ -3,9 +3,11 @@
 (function ($, d3, colorbrewer) {
     'use strict';
 
-    var map,
-        defaultFill = 0.9;
+    var map;
 
+    function opacity(d) {
+        return d.properties.score;
+    }
 
     function makePopOver(node, data) {
         var msg = [];
@@ -14,6 +16,7 @@
         msg.push('<b>Location:</b> ' + data.properties.country);
         msg.push('<b>Disease:</b> ' + data.properties.disease);
         msg.push('<b>Symptoms:</b> ' + data.properties.symptoms.join(', '));
+        msg.push('<b>Similarity:</b> ' + data.properties.score.toFixed(2));
         $(node).popover({
             html: true,
             container: 'body',
@@ -54,8 +57,8 @@
                 fill: function (d) {
                     return color(d.properties.date);
                 },
-                'fill-opacity': defaultFill,
-                'stroke-opacity': defaultFill,
+                'fill-opacity': opacity,
+                'stroke-opacity': opacity,
                 'stroke': 'black',
                 'stroke-width': '0.5pt',
                 'pointer-events': 'auto'

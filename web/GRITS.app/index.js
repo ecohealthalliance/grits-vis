@@ -1,10 +1,10 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*globals console, d3, $, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp*/
+/*globals console, d3, $, tangelo, mapApp, timelineApp, dendrogramApp, spacemapApp, IncidentNorm*/
 
-window.gritsLoader(function (loadHealthMapData) {
+window.gritsLoader(function (loadHealthMapData, targetIncident) {
     "use strict";
     var defaultStart = new Date(2014, 0, 1),
-        defaultEnd = new Date(2014, 2, 17),
+        defaultEnd = new Date(2014, 3, 3),
         _queryLimit = 250,
         _savedSpecies = {};
 
@@ -16,6 +16,8 @@ window.gritsLoader(function (loadHealthMapData) {
         $("#group-panel").modal('show');
         return;
     }
+
+    console.log(targetIncident);
 
     // Register a resize callback for the whole window; cause this to emit
     // custom resize events on each div.
@@ -102,6 +104,13 @@ window.gritsLoader(function (loadHealthMapData) {
             diseases = getSelectedOptions('#diseaseSelectBox'),
             species = getSelectedOptions('#speciesSelectBox');
         loadHealthMapData(dataStart, dataEnd, species, diseases, _queryLimit, function (argData, allSymptoms, allSpecies, allDiseases) {
+
+            var norm = new IncidentNorm({
+                target: targetIncident,
+                cSpecies: 1.0,
+                cSymptoms: 1.0,
+                cLocation: 1.0
+            });
             
             function filterBySymptoms(allData) {
                 var filteredData = [];
@@ -134,13 +143,25 @@ window.gritsLoader(function (loadHealthMapData) {
             $('#itemNumber').text(argData.length.toString() + " records loaded");
             var data = filterBySymptoms(argData);
 
+            // add similarity score
+            data.forEach(function (d) {
+                var n = Math.min(norm(d), 1);
+                d.properties.score = 1 - n*n;
+            });
+
+            // sort by similarity
+            data.sort(function (a, b) {
+                return a.properties.score > b.properties.score ? 1 : -1;
+            });
+
             $('.content').trigger('datachanged', {
                 data: data,
                 dataStart: dataStart,
                 dataEnd: dataEnd,
                 symptoms: symptoms,
                 allSymptoms: allSymptoms,
-                allDiseases: allDiseases
+                allDiseases: allDiseases,
+                target: targetIncident
             });
 
             multiSelectBox('#symptomsSelectBox', getArrayFromKeys(allSymptoms));
@@ -153,8 +174,8 @@ window.gritsLoader(function (loadHealthMapData) {
     $('#dateRangeSlider').dateRangeSlider({
         range: true,
         bounds: {
-            min: new Date(2012, 3, 1),
-            max: new Date(2014, 2, 17)
+            min: new Date(2012, 3, 5),
+            max: new Date(2014, 3, 5)
         },
         defaultValues: {
             min: defaultStart,
