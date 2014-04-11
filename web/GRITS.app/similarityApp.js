@@ -19,11 +19,15 @@
             symptoms.label = 'symptoms';
             species.label = 'species';
             $(main).correlationPlot()
-                   .correlationPlot('variables', comp)
-                   .on('datachanged', function (evt, arg){
-                       $(main).correlationPlot('data', arg.data);
-                       $(main).trigger('draw');
-                });
+                    .correlationPlot('variables', comp)
+                    .on('datachanged', function (evt, arg){
+                        $(main).correlationPlot('data', arg.data);
+                        $(main).trigger('draw');
+                    })
+                    .on('thresholdchanged', function (evt, arg) {
+                        $(main).correlationPlot('threshold', arg.threshold);
+                        $(main).trigger('draw');
+                    });
         }
     };
 }(window.$));

@@ -247,6 +247,12 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     $('#dateInterval').change(function (evt) {
         updateEverything();
     });
+    d3.select('#thresholdSlider')
+        .on('change', function () {
+            $('.content').trigger('thresholdchanged', {
+                threshold: parseFloat(this.value)
+            });
+        });
 
     updateEverything();
 });

@@ -23,11 +23,12 @@
 
     }
 
-    function timeNorm(a, b) {
-        // distance in time scaled so that 1 week === 1
+    function timeNorm(a, b, interval) {
+        // distance in time scaled so that interval === 1
+        interval = interval || _mpy;
         var t1 = a.properties.date,
             t2 = b.properties.date;
-        return (Math.abs(t1 - t2) / _mpy);
+        return (Math.abs(t1 - t2) / interval);
     }
 
     function speciesNorm(a, b) {
@@ -74,7 +75,8 @@
     // return values in [0, 1].
     window.IncidentNorm = function (arg) {
         arg = arg || {};
-
+        
+        var interval = arg.timeInterval;
         function norm(x) {
             // scale output to range [0,1]
             var c1 = norm.cSpecies * norm.cSpecies,
@@ -85,7 +87,7 @@
                 n1 = Math.min(speciesNorm(norm.target, x), 1),
                 n2 = Math.min(symptomNorm(norm.target, x), 1),
                 n3 = Math.min(distNorm(norm.target, x), 1),
-                n4 = Math.min(timeNorm(norm.target, x), 1);
+                n4 = Math.min(timeNorm(norm.target, x, interval), 1);
             return {
                 value: Math.sqrt(
                 c1 * n1 * n1 + 

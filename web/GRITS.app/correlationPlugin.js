@@ -54,8 +54,8 @@
             selection.exit()
                 .remove();
             selection
-                .transition()
-                    .duration(duration)
+                //.transition()
+                //    .duration(duration)
                 .attr('cx', function (d) {
                     return xAx(that.x(d));
                 })
@@ -68,7 +68,7 @@
                     'stroke-opacity': opacity
                 })
                 .style('fill', function (d) {
-                    return d.properties.scoreObj.value <= that.threshold ? 'red' : null;
+                    return d.properties.scoreObj.value <= that.threshold ? 'steelblue' : 'white';
                 });
             return this;
         };
@@ -96,6 +96,7 @@
         this.variables = options.variables || [];
         this.data = options.data || [];
         this.table = null;
+        this.threshold = options.threshold || 0.5;
         this.draw = function () {
             if (!that.variables.length) { return; }
             var nvars = that.variables.length,
@@ -174,6 +175,7 @@
             
             plotSelection.each(function (d) {
                 d.plot.data = that.data;
+                d.plot.threshold = that.threshold;
                 d.plot.draw();
             });
 
@@ -189,6 +191,8 @@
                 obj.variables = arg2;
             } else if (arg1 === 'data') {
                 obj.data = arg2;
+            } else if (arg1 === 'threshold') {
+                obj.threshold = arg2;
             } else {
                 obj = new CorrelationPlotter($.extend({'node': this}, arg1));
                 node.data('plotObject', obj);

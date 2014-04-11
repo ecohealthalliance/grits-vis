@@ -82,7 +82,6 @@
     .correlationPlot .point {
         stroke: black;
         stroke-width: .5;
-        fill: steelblue;
     }
 
     .correlationPlot .threshold {
@@ -255,7 +254,10 @@
             </div>
         </div>
         <div class=row>
-            <div class="col-sm-10"></div>
+            <div class="col-sm-6"></div>
+            <div class="col-sm-4">
+                <input id="thresholdSlider" type="range" min="0" max="1" step="0.01" value="0.5">
+            </div>
             <div class="col-sm-2">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#similarity-panel">
                     Customize similarity
