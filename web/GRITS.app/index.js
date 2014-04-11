@@ -95,22 +95,54 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
         });
         return node;
     }
+    
+    function getDates() {
+        var start, end, day = 24 * 60 * 60 * 1000,
+            interval = $('#dateInterval').val(),
+            slider = $('#dateRangeSlider');
+        if (interval === 'custom') {
+            start = slider.dateRangeSlider('min');
+            end = slider.dateRangeSlider('max');
+        } else {
+            if (interval === 'week') {
+                interval = 7 * day;
+            } else if (interval === 'month') {
+                interval = 30 * day;
+            } else if (interval === 'year') {
+                interval = 365 * day;
+            } else {
+                throw "Unknown option in Interval selection box.";
+            }
+            start = new Date(targetIncident.properties.date - interval);
+            end = new Date(targetIncident.properties.date + interval);
+            slider.dateRangeSlider('min', start);
+            slider.dateRangeSlider('max', end);
+        }
+
+        return {
+            start: start,
+            end: end
+        };
+    }
 
     function updateEverything() {
 
-        var dataStart = $('#dateRangeSlider').dateRangeSlider('min'),
-            dataEnd = $('#dateRangeSlider').dateRangeSlider('max'),
+        var dates = getDates(),
             symptoms = getSelectedOptions('#symptomsSelectBox'),
             diseases = getSelectedOptions('#diseaseSelectBox'),
             species = getSelectedOptions('#speciesSelectBox');
-        loadHealthMapData(dataStart, dataEnd, species, diseases, _queryLimit, function (argData, allSymptoms, allSpecies, allDiseases) {
 
-            var norm = new IncidentNorm({
+        loadHealthMapData(dates.start, dates.end, species, diseases, _queryLimit, function (argData, allSymptoms, allSpecies, allDiseases) {
+
+            var dataStart = dates.start,
+                dataEnd = dates.end,
+                norm = new IncidentNorm({
                 target: targetIncident,
                 cSpecies: 1.0,
                 cSymptoms: 1.0,
                 cLocation: 1.0,
-                cTime: 1.0
+                cTime: 1.0,
+                timeInterval: dataEnd - dataStart
             });
             
             function filterBySymptoms(allData) {
@@ -182,7 +214,10 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
             min: defaultStart,
             max: defaultEnd
         }
-    }).on('valuesChanged', updateEverything);
+    }).on('userValuesChanged', function () {
+        $('#dateInterval').val('custom');
+        updateEverything();
+    });
 
 
     $('#dataLimit').change(function (evt) {
@@ -204,6 +239,9 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
         .on('change', function () {
             updateEverything();
         });
+    $('#dateInterval').change(function (evt) {
+        updateEverything();
+    });
 
     updateEverything();
 });

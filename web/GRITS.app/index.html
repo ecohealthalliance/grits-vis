@@ -177,7 +177,16 @@
         </div>
         <div class=row>
             <label class="col-sm-2 control-label ui-label">Date range</label>
-            <div class=col-sm-8><div id="dateRangeSlider"></div></div>
+            <div class=col-sm-6><div id="dateRangeSlider"></div></div>
+            <label class="col-sm-1 control-label ui-label">Interval</label>
+            <div class=col-sm-1>
+                <select id=dateInterval>
+                    <option value=custom>Custom</option>
+                    <option value=week selected>1 week</option>
+                    <option value=month>1 month</option>
+                    <option value=year>1 year</option>
+                </select>
+            </div>
             <label class="col-sm-1 control-label ui-label">Limit</label>
             <div class=col-sm-1>
                 <select id=dataLimit>
