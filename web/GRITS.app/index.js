@@ -104,7 +104,9 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
             start = slider.dateRangeSlider('min');
             end = slider.dateRangeSlider('max');
         } else {
-            if (interval === 'week') {
+            if (interval === 'day') {
+                interval = day;
+            } else if (interval === 'week') {
                 interval = 7 * day;
             } else if (interval === 'month') {
                 interval = 30 * day;
