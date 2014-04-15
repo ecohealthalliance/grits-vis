@@ -166,15 +166,14 @@
         var defaults = {
                 zoom: 2,
                 center: [0, 0]
-        },
-            idiv = 0;
+        };
         params = $.extend(true, {}, defaults, params);
 
         this.each(function () {
             // we need to change geojs to accept a jquery node...
-            var divID = 'geojsMapDiv' + (++idiv).toString(),
-                m_this = this,
-                m_node = $(m_this);
+            var m_this = this,
+                m_node = $(m_this),
+                savedOpts = {};
 
             // check if this element has already been initialized with a map
             // ( we can't currently destroy an existing map )
@@ -201,18 +200,16 @@
             // set up data handlers
             m_node.on('draw', function (evt, opts) {
                 var groups = m_node.data('_mapGroups');
+                savedOpts = opts;
                 $.map(groups, function (g) {
                     g.draw(opts);
                 });
             });
 
-            layer.on(geo.event.pan, function (evt) {
+            layer.on([geo.event.pan, geo.event.zoom], function (evt) {
                 var groups = m_node.data('_mapGroups');
                 $.map(groups, function (g) {
-                    g.translate([
-                        evt.curr_display_pos.x - evt.last_display_pos.x,
-                        evt.curr_display_pos.y - evt.last_display_pos.y
-                    ]);
+                    g.draw(savedOpts);
                 });
             });
 
@@ -224,17 +221,6 @@
             
             // attach resize handler
             $(window).resize(resize);
-
-            // ignore right clicks
-            m_node.on("mousedown", function (evt) {
-                if (evt.which !== 1) {
-                    evt.stopPropagation();
-                }
-            }).on("mouseup", function (evt) {
-                if (evt.which !== 1) {
-                    evt.stopPropagation();
-                }
-            });
 
             // connect the layers together
             map.addLayer(osm)
