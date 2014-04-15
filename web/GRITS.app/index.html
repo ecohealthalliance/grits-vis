@@ -46,7 +46,7 @@
     }
 
     #control-panel {
-        background-color: rgba(245, 245, 245, 0.9);
+        background-color: rgba(200, 200, 200, 0.85);
     }
 
     .fill {
@@ -253,11 +253,21 @@
             </div>
         </div>
         <div class=row>
-            <div class="col-sm-6"></div>
-            <div class="col-sm-4">
-                <input id="thresholdSlider" type="range" min="0" max="1" step="0.01" value="0.5">
+            <label class="col-sm-1 control-label ui-label">cTime</label>
+            <div id="cTime" class="col-sm-2"></div>
+            <label class="col-sm-1 control-label ui-label">cDistance</label>
+            <div id="cDistance" class="col-sm-2"></div>
+            <label class="col-sm-1 control-label ui-label">cSpecies</label>
+            <div id="cSpecies" class="col-sm-2"></div>
+            <label class="col-sm-1 control-label ui-label">cSymptoms</label>
+            <div id="cSymptoms" class="col-sm-2"></div>
+        </div>
+        <div class=row>
+            <div class="col-sm-3"></div>
+            <label class="col-sm-1 control-label ui-label">Threshold</label>
+            <div class="col-sm-4" id="thresholdBox">
             </div>
-            <div class='col-sm-1'></div>
+            <div class="col-sm-3"></div>
             <div class="col-sm-1">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#diagnose-panel">
                     Diagnose

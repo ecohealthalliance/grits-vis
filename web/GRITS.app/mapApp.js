@@ -56,7 +56,7 @@
             },
             style: {
                 fill: function (d) {
-                    if (d.properties.score >= 1.0) {
+                    if (d.properties.id ===  args.target.properties.id) {
                         return 'red';
                     }
                     return color(d.properties.date);

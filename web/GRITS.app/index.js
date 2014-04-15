@@ -29,6 +29,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     // Create control panel.
     $("#control-panel").controlPanel();
 
+
     mapApp.initialize('#upper-left');
     timelineApp.initialize('#lower-left');
     dendrogramApp.initialize('#diagnose-content');
@@ -129,6 +130,29 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
         };
     }
 
+    function applyScores(data) {
+        var dates = getDates(),
+            norm = new IncidentNorm({
+                target: targetIncident,
+                cSpecies: $('#cSpecies').slider('value'),
+                cSymptoms: $('#cSymptoms').slider('value'),
+                cTime: $('#cTime').slider('value'),
+                cLocation: $('#cDistance').slider('value'),
+                timeInterval: dates.end - dates.start
+        });
+
+        data.forEach(function (d) {
+            var o = norm(d),
+                n = Math.min(o.value, 1);
+            d.properties.score = 1 - n;
+            d.properties.scoreObj = o;
+        });
+
+        data.sort(function (a, b) {
+            return a.properties.score > b.properties.score ? 1 : -1;
+        });
+    }
+
     function updateEverything() {
 
         var dates = getDates(),
@@ -139,15 +163,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
         loadHealthMapData(dates.start, dates.end, species, diseases, _queryLimit, function (argData, allSymptoms, allSpecies, allDiseases) {
 
             var dataStart = dates.start,
-                dataEnd = dates.end,
-                norm = new IncidentNorm({
-                target: targetIncident,
-                cSpecies: 1.0,
-                cSymptoms: 1.0,
-                cLocation: 1.0,
-                cTime: 1.0,
-                timeInterval: dataEnd - dataStart
-            });
+                dataEnd = dates.end;
             
             function filterBySymptoms(allData) {
                 var filteredData = [];
@@ -180,19 +196,8 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
             $('#itemNumber').text(argData.length.toString() + " records loaded");
             var data = filterBySymptoms(argData);
 
-            // add similarity score
-            data.forEach(function (d) {
-                var o = norm(d),
-                    n = Math.min(o.value, 1);
-                d.properties.score = 1 - n*n;
-                d.properties.scoreObj = o;
-            });
+            applyScores(data);
 
-            // sort by similarity
-            data.sort(function (a, b) {
-                return a.properties.score > b.properties.score ? 1 : -1;
-            });
-            
             _savedArgs = {
                 data: data,
                 dataStart: new Date(dataStart),
@@ -201,7 +206,7 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
                 allSymptoms: allSymptoms,
                 allDiseases: allDiseases,
                 target: targetIncident,
-                threshold: parseFloat($('#thresholdSlider').get(0).value)
+                threshold: $('#thresholdBox').slider('value')
             };
 
             $('.content').trigger('datachanged', _savedArgs);
@@ -251,11 +256,59 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     $('#dateInterval').change(function (evt) {
         updateEverything();
     });
-    d3.select('#thresholdSlider')
-        .on('change', function () {
-            _savedArgs.threshold = this.value;
-            $('.content').trigger('datachanged', _savedArgs);
-        });
 
+    // Create threshold slider
+    $("#thresholdBox").css('margin-top', '3px').slider({
+        min: 0,
+        max: 1,
+        value: 0.25,
+        step: 0.01,
+        change: function (evt, ui) {
+            _savedArgs.threshold = ui.value;
+            $('.content').trigger('datachanged', _savedArgs);
+        }
+    });
+
+    // Create norm controls
+    $("#cTime").css('margin-top', '3px').slider({
+        min: 0,
+        max: 1,
+        value: 1,
+        step: 0.01,
+        change: function (evt, ui) {
+            applyScores(_savedArgs.data);
+            $('.content').trigger('datachanged', _savedArgs);
+        }
+    });
+    $("#cDistance").css('margin-top', '3px').slider({
+        min: 0,
+        max: 1,
+        value: 1,
+        step: 0.01,
+        change: function (evt, ui) {
+            applyScores(_savedArgs.data);
+            $('.content').trigger('datachanged', _savedArgs);
+        }
+    });
+    $("#cSpecies").css('margin-top', '3px').slider({
+        min: 0,
+        max: 1,
+        value: 1,
+        step: 0.01,
+        change: function (evt, ui) {
+            applyScores(_savedArgs.data);
+            $('.content').trigger('datachanged', _savedArgs);
+        }
+    });
+    $("#cSymptoms").css('margin-top', '3px').slider({
+        min: 0,
+        max: 1,
+        value: 1,
+        step: 0.01,
+        change: function (evt, ui) {
+            applyScores(_savedArgs.data);
+            $('.content').trigger('datachanged', _savedArgs);
+        }
+    });
     updateEverything();
 });

@@ -15,8 +15,9 @@
                     species
                 ],
                 threshold = 0.5,
+                target = {properties: {}},
                 color = function (d) {
-                    if (d.properties.score >= 1) {
+                    if (d.properties.id === target.properties.id) {
                         return 'red';
                     }
                     return d.properties.score > threshold ? 'steelblue' : 'white';
@@ -30,6 +31,7 @@
                 color: color
             })
                 .on('datachanged', function (evt, arg){
+                    target = arg.target;
                     threshold = arg.threshold;
                     $(main).correlationPlot('data', arg.data);
                     $(main).trigger('draw');

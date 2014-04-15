@@ -80,8 +80,8 @@
         function norm(x) {
             // scale output to range [0,1]
             var c1 = norm.cSpecies * norm.cSpecies,
-                c2 = norm.cSymptoms * norm.cSpecies,
-                c3 = norm.cLocation * norm.cSpecies,
+                c2 = norm.cSymptoms * norm.cSymptoms,
+                c3 = norm.cLocation * norm.cLocation,
                 c4 = norm.cTime * norm.cTime,
                 c = Math.sqrt(c1 + c2 + c3 + c4) || 1,
                 n1 = Math.min(speciesNorm(norm.target, x), 1),
