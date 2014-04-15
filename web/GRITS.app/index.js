@@ -32,8 +32,8 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     mapApp.initialize('#upper-left');
     timelineApp.initialize('#lower-left');
     dendrogramApp.initialize('#diagnose-content');
-    spacemapApp.initialize('#upper-right');
-    similarityApp.initialize('#lower-right');
+    spacemapApp.initialize('#lower-right');
+    similarityApp.initialize('#upper-right');
 
     function getSelectedOptions(node) {
         var selected = [], all = false;
