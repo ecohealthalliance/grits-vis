@@ -10,6 +10,11 @@
                                  tangelo.isArray(node.symptom.name) ? node.symptom.name : [],
                                  node.children && node.children[1] ? getChildren(node.children[1]) : []);
             };
+            
+            var width = $(window).width()*0.5,
+                height = $(window).height()*0.5;
+            $(node).width(width).height(height);
+            $('#diagnose-panel').width(width).height(height).css({top: '25%', left: '25%'});
 
             d3.json("../decision-tree/decision_tree.json", function (err, data) {
                 var symptoms,
@@ -71,7 +76,7 @@
                     followPath(data, symptoms);
                 }
 
-                $("#lower-right").dendrogramLocal({
+                $(node).dendrogramLocal({
                     data: data,
                     orientation: "vertical",
                     id: {field: "id"},

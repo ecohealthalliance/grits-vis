@@ -16,6 +16,9 @@
                 ],
                 threshold = 0.5,
                 color = function (d) {
+                    if (d.properties.score >= 1) {
+                        return 'red';
+                    }
                     return d.properties.score > threshold ? 'steelblue' : 'white';
                 };
             distance.label = 'distance';
@@ -30,6 +33,9 @@
                     threshold = arg.threshold;
                     $(main).correlationPlot('data', arg.data);
                     $(main).trigger('draw');
+            });
+            $(window).resize(function () {
+                $(main).trigger('draw');
             });
         }
     };

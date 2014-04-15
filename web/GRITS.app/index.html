@@ -41,11 +41,12 @@
 
     body {
         padding-top: 50px;
+        padding-bottom: 20px;
         height: 100%;
     }
 
     #control-panel {
-        background-color: lightgray;
+        background-color: rgba(245, 245, 245, 0.9);
     }
 
     .fill {
@@ -162,18 +163,17 @@
     </div>
 </div>
 
-<div id="similarity-panel" class="modal fade" role=dialog>
+<div id="diagnose-panel" class="modal fade" role=dialog>
     <div class=modal-dialog>
         <div class=modal-content>
             <div class=modal-header>
-                Customize the similarity metric
+                Diagnose by symptom
             </div>
             <div class=modal-body>
-                <div id="similarity-dialog-content" class=content></div>
+                <div id="diagnose-content" class=content></div>
             </div>
             <div class=modal-footer>
-                <button type=button class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type=button class="btn btn-primary">Save</button>
+                <button type=button class="btn btn-default btn-primary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -257,9 +257,10 @@
             <div class="col-sm-4">
                 <input id="thresholdSlider" type="range" min="0" max="1" step="0.01" value="0.5">
             </div>
-            <div class="col-sm-2">
-                <button class="btn btn-primary" data-toggle="modal" data-target="#similarity-panel">
-                    Customize similarity
+            <div class='col-sm-1'></div>
+            <div class="col-sm-1">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#diagnose-panel">
+                    Diagnose
                 </button>
             </div>
         </div>

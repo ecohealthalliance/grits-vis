@@ -115,7 +115,9 @@
             }
 
             $(node).on('datachanged', function (evt, arg) {
-                updateData(arg.data);
+                updateData(arg.data.filter(function (d) {
+                    return d.properties.score >= arg.threshold;
+                }));
             });
 
             $("#distance-slider").slider({

@@ -11,7 +11,6 @@
                 // Update timeline
 
                 // Bin the data by hour
-                console.log(args.threshold);
                 data.filter(function (d) {
                     return d.properties.score >= args.threshold;
                 }).forEach(function (d) {
