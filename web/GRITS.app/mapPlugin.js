@@ -175,7 +175,6 @@
             var divID = 'geojsMapDiv' + (++idiv).toString(),
                 m_this = this,
                 m_node = $(m_this);
-            m_node.attr('id', divID);
 
             // check if this element has already been initialized with a map
             // ( we can't currently destroy an existing map )
@@ -184,7 +183,7 @@
             }
 
             // create the map and layers
-            var mapOpts = $.extend({ node: divID }, params),
+            var mapOpts = $.extend({ node: this }, params),
                 map = geo.map(mapOpts),
                 osm = geo.osmLayer({'renderer': 'vglRenderer'}).referenceLayer(true),
                 layer = geo.featureLayer({'renderer': 'd3Renderer'});
