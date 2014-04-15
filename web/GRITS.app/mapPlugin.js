@@ -60,6 +60,7 @@
                     },
                     handlers: {}
                 },
+                filter: function () { return true; },
                 data: [],
                 dataIndexer: null,
                 flushGeoCache: true  // for recompute of geo transform, broken right now
@@ -125,7 +126,7 @@
             });
 
             // create the selection
-            var pts = svg.selectAll('.dataPoints').data(opts.data, opts.dataIndexer);
+            var pts = svg.selectAll('.dataPoints').data(opts.data.filter(opts.filter), opts.dataIndexer);
             
             // apply exit style/transition
             applyStyle(applyTransition(pts.exit(), opts.exit.transition), opts.exit).remove();

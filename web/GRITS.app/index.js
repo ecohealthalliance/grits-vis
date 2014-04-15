@@ -6,7 +6,8 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     var defaultStart = new Date(2014, 3, 1),
         defaultEnd = new Date(2014, 3, 5),
         _queryLimit = 250,
-        _savedSpecies = {};
+        _savedSpecies = {},
+        _savedArgs;
 
     if (loadHealthMapData === 'login') {
         $("#login-panel").modal('show');
@@ -191,16 +192,19 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
             data.sort(function (a, b) {
                 return a.properties.score > b.properties.score ? 1 : -1;
             });
-
-            $('.content').trigger('datachanged', {
+            
+            _savedArgs = {
                 data: data,
-                dataStart: dataStart,
-                dataEnd: dataEnd,
+                dataStart: new Date(dataStart),
+                dataEnd: new Date(dataEnd),
                 symptoms: symptoms,
                 allSymptoms: allSymptoms,
                 allDiseases: allDiseases,
-                target: targetIncident
-            });
+                target: targetIncident,
+                threshold: parseFloat($('#thresholdSlider').get(0).value)
+            };
+
+            $('.content').trigger('datachanged', _savedArgs);
 
             multiSelectBox('#symptomsSelectBox', getArrayFromKeys(allSymptoms));
             multiSelectBox('#diseaseSelectBox', getArrayFromKeys(allDiseases));
@@ -249,9 +253,8 @@ window.gritsLoader(function (loadHealthMapData, targetIncident) {
     });
     d3.select('#thresholdSlider')
         .on('change', function () {
-            $('.content').trigger('thresholdchanged', {
-                threshold: parseFloat(this.value)
-            });
+            _savedArgs.threshold = this.value;
+            $('.content').trigger('datachanged', _savedArgs);
         });
 
     updateEverything();

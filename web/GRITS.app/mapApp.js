@@ -3,10 +3,10 @@
 (function ($, d3, colorbrewer) {
     'use strict';
 
-    var map;
+    var map, threshold = 0.5;
 
     function opacity(d) {
-        return d.properties.score;
+        return 1.0;
     }
 
     function makePopOver(node, data) {
@@ -41,7 +41,7 @@
             }
         });
 
-        var cscale = colorbrewer.YlGnBu[3],
+        var cscale = colorbrewer.PuBu[3],
             midDate = new Date((dataStart.valueOf() + dataEnd.valueOf()) / 2),
             color = d3.scale.linear().domain([dataStart, midDate, dataEnd]).range(cscale).clamp(true);
         map.geojsMap('group', 'points', {
@@ -56,7 +56,7 @@
             },
             style: {
                 fill: function (d) {
-                    if (d.properties.score > 0.99) {
+                    if (d.properties.score >= 1.0) {
                         return 'red';
                     }
                     return color(d.properties.date);
@@ -91,6 +91,9 @@
                 each: function (d) {
                     $(this).parent().remove();
                 }
+            },
+            filter: function (d) {
+                return d.properties.score > threshold;
             }
 
         }).trigger('draw');
@@ -99,6 +102,7 @@
         initialize: function (node) {
             map = $(node).geojsMap({'zoom': 3});
             $(map).on('datachanged', function (evt, args) {
+                threshold = args.threshold;
                 update(args);
             });
         },

@@ -13,21 +13,24 @@
                     time,
                     symptoms,
                     species
-                ];
+                ],
+                threshold = 0.5,
+                color = function (d) {
+                    return d.properties.score > threshold ? 'steelblue' : 'white';
+                };
             distance.label = 'distance';
             time.label = 'time';
             symptoms.label = 'symptoms';
             species.label = 'species';
-            $(main).correlationPlot()
-                    .correlationPlot('variables', comp)
-                    .on('datachanged', function (evt, arg){
-                        $(main).correlationPlot('data', arg.data);
-                        $(main).trigger('draw');
-                    })
-                    .on('thresholdchanged', function (evt, arg) {
-                        $(main).correlationPlot('threshold', arg.threshold);
-                        $(main).trigger('draw');
-                    });
+            $(main).correlationPlot({
+                variables: comp,
+                color: color
+            })
+                .on('datachanged', function (evt, arg){
+                    threshold = arg.threshold;
+                    $(main).correlationPlot('data', arg.data);
+                    $(main).trigger('draw');
+            });
         }
     };
 }(window.$));

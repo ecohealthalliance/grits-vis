@@ -11,7 +11,10 @@
                 // Update timeline
 
                 // Bin the data by hour
-                data.forEach(function (d) {
+                console.log(args.threshold);
+                data.filter(function (d) {
+                    return d.properties.score >= args.threshold;
+                }).forEach(function (d) {
                     var hour = new Date(d.properties.date);
                     hour.setMinutes(0);
                     hour.setSeconds(0);
