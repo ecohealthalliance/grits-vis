@@ -98,22 +98,25 @@
 
 
     window.gritsLoader = function (callBack) {
-        $.ajax({
-            url: '/girder/api/v1/user/me',
-            dataType: 'json',
-            success: function (response) {
-                if (response) {
-                    if (response.groups && response.groups.length > 0) { // should test if it is the correct group, but... later
-                        loadTargetIncident(function (incident) {
-                            callBack(loadHealthMapData, incident);
-                        });
+        // make sure the window is loaded first
+        $(function () {
+            $.ajax({
+                url: '/girder/api/v1/user/me',
+                dataType: 'json',
+                success: function (response) {
+                    if (response) {
+                        if (response.groups && response.groups.length > 0) { // should test if it is the correct group, but... later
+                            loadTargetIncident(function (incident) {
+                                callBack(loadHealthMapData, incident);
+                            });
+                        } else {
+                            callBack("group");
+                        }
                     } else {
-                        callBack("group");
+                        callBack("login");
                     }
-                } else {
-                    callBack("login");
                 }
-            }
+            });
         });
     };
 }(window.$));
