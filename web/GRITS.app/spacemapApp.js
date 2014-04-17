@@ -2,6 +2,22 @@
 (function ($, d3, tangelo) {
     'use strict';
 
+    function shuffle(a) {
+
+        function swap(i, j) {
+            var tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
+        }
+
+        // return a randomly shuffled copy of 'a'
+        var b = a.slice();
+        b.forEach(function (d, i) {
+            var j = Math.floor(Math.random() * b.length);
+            swap(i, j);
+        });
+        return b;
+    }
 
     window.spacemapApp = {
         initialize: function (node) {
@@ -18,7 +34,8 @@
                 "map"
             ],
             currentData,
-            spacemapInitialized = false;
+            spacemapInitialized = false,
+            maxDataSize = 100;
 
             function addConstraint(field, value) {
                 // var row = $('<div class="form-group"></div>'),
@@ -73,10 +90,11 @@
                 var fieldMap = {},
                     fields = [];
 
+                data = shuffle(data).slice(0, maxDataSize);
                 currentData = data;
 
                 // Discover fields
-                data.forEach(function (d) {
+                data.forEach(function (d, i) {
                     var field, subfield;
                     for (field in d) {
                         if (d.hasOwnProperty(field) && !fieldMap[field]) {
