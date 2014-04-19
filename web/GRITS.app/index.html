@@ -23,7 +23,6 @@
 <script src=mapPlugin.js></script>
 <script src=mapApp.js></script>
 <script src=spacemap.js></script>
-<script src=timeline.js></script>
 <script src=timelineApp.js></script>
 <script src=dendrogramApp.js></script>
 <script src=spacemapApp.js></script>
@@ -87,6 +86,19 @@
     .correlationPlot .threshold {
         stroke: black;
         stroke-width: 0.75;
+        fill: none;
+    }
+
+    .timeline .axis path, .timeline .axis line {
+        stroke: black;
+        stroke-width: 1;
+        fill: none;
+        shape-rendering: crispEdges;
+    }
+
+    .timeline .plot path {
+        stroke: steelblue;
+        stroke-width: 1;
         fill: none;
     }
 </style>
