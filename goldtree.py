@@ -111,7 +111,7 @@ def tangelo_dendrogram_dict(t):
     return make_dict(t, Id())
 
 if __name__ == "__main__":
-    m = SymptomMatrix("Matrix_symp_dis_v4_KIT.csv")
+    m = SymptomMatrix("matrix.csv")
     d = decision_tree(m)
     o = tangelo_dendrogram_dict(d)
     j = json.dumps(o)
