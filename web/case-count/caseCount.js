@@ -6,9 +6,49 @@
             caseCounts: [],
             x: function (d) { return d.date; },
             y: function (d) { return d.value; },
-            text: function (d) { return 'Discovered "' + d.type + d.typeDetail + '" case count (' + d.value + ').\nOriginal text was "' + d.text + '" from HealthMap link id ' + d.id; },
-            click: function (d) { window.open(that.options.link(d), "_blank"); },
-            color: function (d) { return d.type; },
+            click: function (d, that) {
+                that.selectedId = that.options.id(d);
+                that.plot.selectAll("circle")
+                    .attr("r", function (d) { return that.options.id(d) === that.selectedId ? 8 : 2.5; })
+                    // .style("opacity", function (d) { return that.options.id(d) === that.selectedId ? 1 : 0.3; })
+                    .style("fill", function (d) { return that.options.color(d, that); });
+                that.plot2.selectAll("circle")
+                    .attr("r", function (d) { return that.options.id(d) === that.selectedId ? 3 : 1.5; })
+                    // .style("opacity", function (d) { return that.options.id(d) === that.selectedId ? 1 : 0.3; })
+                    .style("fill", function (d) { return that.options.color(d, that); });
+                // window.open(this.options.link(d), "_blank");
+                if (!that.detail) {
+                    that.detail = d3.select(that.element.get(0)).append("div")
+                        .style("position", "fixed")
+                        .style("top", "20px")
+                        .style("right", "20px")
+                        .style("width", "300px")
+                        .style("padding", "0px 20px 20px 20px")
+                        .style("background", "#eee")
+                        .style("font-family", "Arial")
+                        .style("opacity", 0.8);
+                }
+                that.detail.html('<h4>' + d.article + '</h4><b>Cases:</b> ' + d.value + '<br><b>Type:</b> ' + d.type + d.typeDetail + '<br>'
+                        + '<b>Original text:</b> "' + d.text + '"<br><b>Kind:</b> ' + (d.death ? "deaths" : "cases") + '<br><b>Article:</b> <a href="' + d.url + '" target="blank">' + d.id + '</a>');
+            },
+            color: function (d, that) {
+                if (d.death) {
+                    return "red";
+                }
+                return "steelblue";
+            },
+            init: function (that) {
+                d3.select(that.element.get(0)).append("div")
+                    .style("position", "fixed")
+                    .style("top", "20px")
+                    .style("right", "340px")
+                    .style("width", "100px")
+                    .style("padding", "20px 20px 20px 20px")
+                    .style("background", "#fff")
+                    .style("font-family", "Arial")
+                    .html('<b><span style="color:steelblue">Cases</span><br><span style="color:red">Deaths</span>');
+            },
+            id: function (d) { return d.id; },
             margin: {
                 top: 10,
                 bottom: 170,
@@ -33,6 +73,7 @@
             this.main = this.svg.append("g");
             this.plot = this.main.append("g").attr("class", "plot");
             this.plot2 = this.main.append("g").attr("class", "plot");
+            this.selectedId = undefined;
 
             var axisPadding = 15,
                 height = (this.options.height || this.element.height()) -
@@ -55,6 +96,7 @@
             this._x = null;
             this._y = null;
             $(window).resize(this._update.bind(this));
+            this.options.init(this);
             this._update();
         },
 
@@ -134,6 +176,7 @@
                         type: type,
                         typeDetail: typeDetail,
                         article: d.description,
+                        death: c.death,
                         url: "http://healthmap.org/ln.php?" + d.name.slice(0, -4),
                         id: d.name.slice(0, -4)
                     });
@@ -217,33 +260,30 @@
                     return !isNaN(that.options.x(d)) && !isNaN(that.options.y(d));
                 }))
                 .enter().append("circle")
-                .attr("r", 4)
-                .attr("opacity", 1)
-                .attr("fill", "steelblue")
-                .attr("stroke", "none")
-                .append("title")
-                .text(function (d) { return that.options.text(d); });
+                .attr("r", 2.5)
+                .style("stroke", "white")
+                .style("stroke-width", 0.5);
             this.plot.selectAll("circle")
                 .attr("cx", function (d) { return that._x(that.options.x(d)); })
                 .attr("cy", function (d) { return that._y(that.options.y(d)); })
                 .style("cursor", "pointer")
-                .style("fill", function (d) { return color(that.options.color(d)); })
+                .style("fill", function (d) { return that.options.color(d, that); })
                 .on("mouseover", function (d) {
-                    d3.select(this).style("opacity", 1).attr("r", 6);
+                    d3.select(this).attr("r", 8);
                 })
                 .on("mouseout", function (d) {
-                    d3.select(this).style("opacity", 1).attr("r", 4);
+                    d3.select(this).attr("r", function (d) { return that.options.id(d) === that.selectedId ? 8 : 2.5 })
                 })
-                .on("click", that.options.click);
+                .on("click", function (d) { that.options.click(d, that); });
 
             this.plot2.selectAll("circle")
                 .data(data.filter(function (d) {
                     return !isNaN(that.options.x(d)) && !isNaN(that.options.y(d));
                 }))
                 .enter().append("circle")
-                .attr("r", 1.5)
+                .attr("r", function (d) { return that.options.id(d) === that.selectedId ? 3 : 1.5 })
                 .attr("opacity", 1)
-                .style("fill", function (d) { return color(that.options.color(d)); })
+                .style("fill", function (d) { return that.options.color(d, that); })
                 .attr("stroke", "none");
             this.plot2.selectAll("circle")
                 .attr("cx", function (d) { return that._x2(that.options.x(d)); })
